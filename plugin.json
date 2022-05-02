@@ -1,7 +1,12 @@
 {
-    "name": "Plugin name",
-    "author": "Plugin author",
+    "name": "Fantastic",
+    "author": "NGnius",
     "main_view_html": "main_view.html",
     "tile_view_html": "",
-    "flags": ["_hot_reload", "_root"]
+    "flags": ["root", "debug"],
+    "publish": {
+        "discord_id": "106537989684887552",
+        "description": "Fan controls",
+        "tags": [ "utility", "fan-control" ]
+    }
 }
