@@ -26,8 +26,8 @@ DATA_SAVE_PATH = DATA_SAVE_FOLDER + DATA_SAVE_FILE
 DEFAULT_DATA = {
     "version": 0,
     "enable": False,
-    "interpolate": False,
-    "curve": [],
+    "interpolate": True,
+    "curve": [], # items are {x: int (distance from left), y: int (distance from top, NOT bottom)}
 }
 
 class Plugin:
@@ -81,10 +81,25 @@ class Plugin:
         await self.wait_for_ready(self)
         return self.settings["enable"]
 
+    async def set_interpol(self, interpolate: bool):
+        await self.wait_for_ready(self)
+        self.settings["interpolate"] = interpolate
+        self.is_changed = True
+
+    async def get_interpol(self) -> bool:
+        await self.wait_for_ready(self)
+        return self.settings["interpolate"]
+
     async def set_plot_size(self, x, y):
         logging.debug(f"Set plot size to ({x},{y})")
         self.plot_width = x
         self.plot_height = y
+
+    async def get_fan_rpm(self) -> int:
+        return get_fan_input()
+
+    async def get_temperature(self) -> int:
+        return int(thermal_zone(0))
 
     async def set_poll_period(self, period):
         self.period_s = period
@@ -100,21 +115,49 @@ class Plugin:
             await asyncio.sleep(0.01)
 
     def do_fan_control(self):
-        index = -1
         curve = self.settings["curve"]
-        temperature = (thermal_zone(0) - TEMPERATURE_MINIMUM) / TEMPERATURE_MAXIMUM
-        for i in range(len(curve)-1, -1, -1):
-            if curve[i]["x"] < temperature:
-                index = i
-                break
+        fan_ratio = 0 # unnecessary in Python, but stupid without
+        if len(curve) == 0:
+            fan_ratio = 1
+        else:
+            index = -1
+            temperature_ratio = (thermal_zone(0) - TEMPERATURE_MINIMUM) / (TEMPERATURE_MAXIMUM - TEMPERATURE_MINIMUM)
+            for i in range(len(curve)-1, -1, -1):
+                if curve[i]["x"] < temperature_ratio:
+                    index = i
+                    break
+            if self.settings["interpolate"]:
+                fan_ratio = self.interpolate_fan(self, index, temperature_ratio)
+            else:
+                fan_ratio = self.step_fan(self, index, temperature_ratio)
+        set_fan_target(int((fan_ratio * FAN_MAXIMUM) + FAN_MINIMUM))
+
+
+    def interpolate_fan(self, index, temperature_ratio):
+        curve = self.settings["curve"]
+        upper_point = {"x": 1.0, "y": 0.0}
+        lower_point = {"x": 0.0, "y": 1.0}
+        if index != -1: # guaranteed to not be empty
+            lower_point = curve[index]
+        if index != len(curve) - 1:
+            upper_point = curve[index+1]
+        #logging.debug(f"lower_point: {lower_point}, upper_point: {upper_point}")
+        upper_y = 1-upper_point["y"]
+        lower_y = 1-lower_point["y"]
+        slope_m = (upper_y - lower_y) / (upper_point["x"] - lower_point["x"])
+        y_intercept_b = lower_y - (slope_m * lower_point["x"])
+        logging.debug(f"interpolation: y = {slope_m}x + {y_intercept_b}")
+        return (slope_m * temperature_ratio) + y_intercept_b
+
+    def step_fan(self, index, temperature_ratio):
+        curve = self.settings["curve"]
         if index != -1:
-            target_speed = ((1 - curve[index]["y"]) * FAN_MAXIMUM) + FAN_MINIMUM
-            set_fan_target(int(target_speed))
+            return 1 - curve[index]["y"]
         else:
             if len(curve) == 0:
-                set_fan_target(int(FAN_MAXIMUM))
+                return 1
             else:
-                set_fan_target(int((FAN_MINIMUM + FAN_MAXIMUM) / 2))
+                return 0.5
 
     # Asyncio-compatible long-running code, executed in a task when the plugin is loaded
     async def _main(self):
@@ -146,7 +189,7 @@ class Plugin:
                 self.do_fan_control(self)
             await asyncio.sleep(self.period_s)
 
-def thermal_zone(index: int):
+def thermal_zone(index: int) -> float:
     with open(f"/sys/class/thermal/thermal_zone{index}/temp", "r") as f:
         result = float(f.read().strip()) / 1000.0
         logging.debug(f"Got {result}'C from thermal_zone{index}")
@@ -157,10 +200,16 @@ def set_fan_target(rpm: int):
     with open("/sys/class/hwmon/hwmon5/fan1_target", "w") as f:
         f.write(str(rpm))
 
+def get_fan_input() -> int:
+    with open("/sys/class/hwmon/hwmon5/fan1_input", "r") as f:
+        rpm = int(f.read().strip())
+        #logging.debug(f"Got {rpm} from fan1_input") # this is too spammy; runs every 0.5s
+        return rpm
+
 def on_enable():
     with open("/sys/class/hwmon/hwmon5/recalculate", "w") as f:
         f.write("1")
-    # TODO disable system fan control
+    # TODO stop system fan control
 
 def on_disable():
     with open("/sys/class/hwmon/hwmon5/recalculate", "w") as f:

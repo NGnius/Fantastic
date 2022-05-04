@@ -6,7 +6,7 @@
         <script src="/static/library.js"></script>
         <script>
             const PLOT_HEIGHT = 200;
-            const PLOT_WIDTH = 284;
+            const PLOT_WIDTH = 270;
             const OFFSET_X = 0;
             const OFFSET_Y = 0;
             // state
@@ -47,6 +47,22 @@
                 return call_plugin_method("get_enable", {});
             }
 
+            function setInterpol(enable) {
+                return call_plugin_method("set_interpol", {"interpolate": enable});
+            }
+
+            function getInterpol() {
+                return call_plugin_method("get_interpol", {});
+            }
+
+            function getFanRpm() {
+                return call_plugin_method("get_fan_rpm", {});
+            }
+
+            function getTemperature() {
+                return call_plugin_method("get_temperature", {});
+            }
+
             function setPlotSize(x, y) {
                 return call_plugin_method("set_plot_size", {"x": x, "y": y});
             }
@@ -54,15 +70,19 @@
             // events
 
             async function onload_body() {
+                let hiderDiv = document.getElementById("hiderDiv");
                 let graphDiv = document.getElementById("graphDiv");
                 await setPlotSize(PLOT_WIDTH, PLOT_HEIGHT);
                 const state_controlToggle = await getEnable(); // retrieve from back-end
                 setToggleState(document.getElementById("controlToggle"), state_controlToggle);
-                showHideElement(graphDiv, state_controlToggle);
+                const state_interpolToggle = await getInterpol(); // retrieve from back-end
+                setToggleState(document.getElementById("interpolToggle"), state_interpolToggle);
+                showHideElement(hiderDiv, state_controlToggle);
                 if (state_controlToggle) {
                     curve = await getCurve();
                     buildCurvePlot(curve);
                 }
+                window.setInterval(pollStats, 500);
                 console.log("Loaded");
             }
 
@@ -79,16 +99,25 @@
 
             async function onclick_controlToggle() {
                 console.log("Click @ controlToggle");
+                let hiderDiv = document.getElementById("hiderDiv");
                 let graphDiv = document.getElementById("graphDiv");
                 let controlToggle = document.getElementById("controlToggle");
                 const state_controlToggle = getToggleState(controlToggle);
                 await setEnable(!state_controlToggle); // notify back-end
                 setToggleState(controlToggle, !state_controlToggle);
-                showHideElement(graphDiv, !state_controlToggle);
                 if (!state_controlToggle) {
                     curve = await getCurve();
                     buildCurvePlot(curve);
                 }
+                showHideElement(hiderDiv, !state_controlToggle);
+            }
+
+            async function onclick_interpolToggle() {
+                console.log("Click @ interpolToggle");
+                let interpolToggle = document.getElementById("interpolToggle");
+                const state_interpolToggle = getToggleState(interpolToggle);
+                await setInterpol(!state_interpolToggle); // notify back-end
+                setToggleState(interpolToggle, !state_interpolToggle);
             }
 
             async function onclick_plotPoint(e, index) {
@@ -105,22 +134,49 @@
             function buildCurvePlot(curve_points) {
                 // TODO
                 let graphDiv = document.getElementById("graphDiv");
-                let newStr = "<span style=\"font-size:x-small;position:absolute;left:0px;top:0px;\">100%</span><span style=\"font-size:x-small;position:absolute;left:0px;bottom:0px;\">0</span><span style=\"font-size:x-small;position:absolute;left:0px;bottom:50%;writing-mode:vertical-lr;text-orientation:mixed;\">Fan</span><span style=\"font-size:x-small;position:absolute;right:0px;bottom:0px;\">100</span><span style=\"font-size:x-small;position:absolute;left:35%;bottom:0px;\">Temperature (C)</span>";
+                let newStr = "<span style=\"font-size:x-small;position:absolute;left:1px;top:-1px;\">100%</span><span style=\"font-size:x-small;position:absolute;left:1px;bottom:-1px;\">0</span><span style=\"font-size:x-small;position:absolute;left:-2px;bottom:50%;writing-mode:vertical-lr;text-orientation:mixed;\">Fan</span><span style=\"font-size:x-small;position:absolute;right:1px;bottom:-1px;\">100</span><span style=\"font-size:x-small;position:absolute;left:35%;bottom:-1px;\">Temperature (°C)</span>";
                 for (let i = 0; i < curve_points.length; i++) {
                     const point = curve_points[i];
                     newStr += "<span style=\"position:absolute;"
-                    newStr += "top:" + Math.round(point["y"]*PLOT_HEIGHT + OFFSET_Y).toString() + "px;left:" + Math.round(point["x"]*PLOT_WIDTH + OFFSET_X).toString() + "px;";
-                    newStr += "width:8px;height:8px;background-color:red;\" id=\"plotPoint";
+                    newStr += "top:" + Math.round(point["y"]*PLOT_HEIGHT + OFFSET_Y + 1).toString() + "px;left:" + Math.round(point["x"]*PLOT_WIDTH + OFFSET_X + 1).toString() + "px;";
+                    newStr += "width:8px;height:8px;background-color:#1a9fff;border-radius:4px\" id=\"plotPoint";
                     newStr += i.toString() + "\" onclick=\"onclick_plotPoint(event," + i.toString() + ")\"></span>";
                 }
                 graphDiv.innerHTML = newStr;
             }
 
+            function pollStats() {
+                /*getFanRpm().then(speed => {
+                    let fanNow = document.getElementById("fanNow");
+                    fanNow.innerText = speed.toString() + " RPM";
+                });
+                sleep(1).then(_ => {});
+                getTemperature().then(temp => {
+                    let tempNow = document.getElementById("tempNow");
+                    tempNow.innerText = temp.toString() + " °C";
+                });
+                sleep(1).then(_ => {});*/
+                pollStatsAsync().then(_ => {});
+            }
+
+            async function pollStatsAsync() {
+                let fanNow = document.getElementById("fanNow");
+                let tempNow = document.getElementById("tempNow");
+
+                const speed = await getFanRpm();
+                const temp = await getTemperature();
+
+                fanNow.innerText = speed.toString() + " RPM";
+                tempNow.innerText = temp.toString() + " °C";
+            }
+
             function showHideElement(elem, visible) {
                 if (visible) {
                     elem.style.visibility = "visible";
+                    elem.style.height = "auto";
                 } else {
                     elem.style.visibility = "hidden";
+                    elem.style.height = "0px";
                 }
             }
 
@@ -138,9 +194,13 @@
             function getToggleState(toggle) {
                 return toggle.classList.contains("gamepaddialog_On_yLrDA");
             }
+
+            function sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
         </script>
     </head>
-    <body onload="onload_body()">
+    <body onload="onload_body()" style="overflow-x:hidden;">
         <div class="quickaccessmenu_TabGroupPanel_1QO7b Panel Focusable">
             <div class="quickaccesscontrols_PanelSectionRow_26R5w">
                 <div class="quickaccesscontrols_PanelSectionRow_26R5w">
@@ -161,8 +221,63 @@
                 </div>
             </div>
         </div>
-        <div id="graphDiv" style="height:200px;width:284px;border:2px solid red;position:relative;" onclick="onclick_graphDiv(event)">
-            Some text to show that something is broken :(
+        <div id="hiderDiv">
+            <div id="graphDiv" style="height:200px;width:270px;border:1px solid #1a9fff;position:relative;background-color:#1a1f2c;border-radius:4px;" onclick="onclick_graphDiv(event)">
+                Some text to show that something is broken :(
+            </div>
+            <div style="font-size:x-small; text-align:center;">
+            Click to add/remove points on the fan curve.
+            </div>
+            <div class="quickaccessmenu_TabGroupPanel_1QO7b Panel Focusable">
+                <div class="quickaccesscontrols_PanelSectionRow_26R5w">
+                    <div class="quickaccesscontrols_PanelSectionRow_26R5w">
+                        <div class="gamepaddialog_Field_eKmEX gamepaddialog_WithFirstRow_2bDqk gamepaddialog_ExtraPaddingOnChildrenBelow_3nLNL gamepaddialog_StandardPadding_xIITX gamepaddialog_HighlightOnFocus_2HFrm Panel Focusable" style="--indent-level:0;">
+                            <div class="gamepaddialog_FieldLabelRow_2VcTl">
+                                <div class="gamepaddialog_FieldLabel_3jMlJ">
+                                    Linear Interpolation
+                                </div>
+                                <div class="gamepaddialog_FieldChildren_2rhav">
+                                    <div id="interpolToggle" tabindex="0" class="gamepaddialog_Toggle_9Ql-o Focusable" onclick="onclick_interpolToggle()">
+                                        <div class="gamepaddialog_ToggleRail_2bl0i"></div>
+                                        <div class="gamepaddialog_ToggleSwitch_1PQpp"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="gamepaddialog_FieldDescription_1W1to">Pretends a straight line connects points</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Fan Info -->
+        <div class="quickaccesscontrols_PanelSection_3gY0a" onclick="updateBatteryStats()" style="margin-bottom:0px;">
+            <!--<div class="quickaccesscontrols_PanelSectionTitle_1IigU">
+                <div class="quickaccesscontrols_Text_1cokl">Fan</div>
+            </div>-->
+            <div class="Panel Focusable" tabindex="0">
+                <div class="quickaccesscontrols_PanelSectionRow_3LM_Z">
+                    <div class="gamepaddialog_Field_eKmEX gamepaddialog_WithFirstRow_2bDqk gamepaddialog_InlineWrapShiftsChildrenBelow_3LCXh gamepaddialog_StandardPadding_xIITX gamepaddialog_HighlightOnFocus_2HFrm Panel Focusable" style="--indent-level:0;padding-left:0px;padding-right:0px;">
+                        <div class="gamepaddialog_FieldLabelRow_2VcTl">
+                            <div class="gamepaddialog_FieldLabel_3jMlJ">Current Fan Speed</div>
+                            <div class="gamepaddialog_FieldChildren_2rhav">
+                                <div class="gamepaddialog_LabelFieldValue_3pteV" id="fanNow"> (|-_-|) </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="Panel Focusable" tabindex="0">
+                <div class="quickaccesscontrols_PanelSectionRow_3LM_Z">
+                    <div class="gamepaddialog_Field_eKmEX gamepaddialog_WithFirstRow_2bDqk gamepaddialog_InlineWrapShiftsChildrenBelow_3LCXh gamepaddialog_StandardPadding_xIITX gamepaddialog_HighlightOnFocus_2HFrm Panel Focusable" style="--indent-level:0;padding-left:0px;padding-right:0px;">
+                        <div class="gamepaddialog_FieldLabelRow_2VcTl">
+                            <div class="gamepaddialog_FieldLabel_3jMlJ">Current Temperature</div>
+                            <div class="gamepaddialog_FieldChildren_2rhav">
+                                <div class="gamepaddialog_LabelFieldValue_3pteV" id="tempNow"> (|-_-|) </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </body>
 </html>
