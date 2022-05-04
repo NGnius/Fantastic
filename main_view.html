@@ -5,10 +5,164 @@
         <link rel="stylesheet" href="/steam_resource/css/library.css">
         <script src="/static/library.js"></script>
         <script>
-            async function onload() {}
+            const PLOT_HEIGHT = 200;
+            const PLOT_WIDTH = 284;
+            const OFFSET_X = 0;
+            const OFFSET_Y = 0;
+            // state
+            let curve = [];
+            let plotClickIsHandled = false;
+
+            // back-end
+
+            function setCurve(curve) {
+                return call_plugin_method("set_curve", {"curve": curve});
+            }
+
+            function getCurve() {
+                return call_plugin_method("get_curve", {});
+            }
+
+            function getCurvePoint(index) {
+                return call_plugin_method("get_curve_point", {"index": index});
+            }
+
+            function setCurvePoint(index, point) {
+                return call_plugin_method("set_curve_point", {"index": index, "point": point});
+            }
+
+            function addCurvePoint(point) {
+                return call_plugin_method("add_curve_point", {"point": point});
+            }
+
+            function removeCurvePoint(index) {
+                return call_plugin_method("remove_curve_point", {"index": index});
+            }
+
+            function setEnable(enable) {
+                return call_plugin_method("set_enable", {"enable": enable});
+            }
+
+            function getEnable() {
+                return call_plugin_method("get_enable", {});
+            }
+
+            function setPlotSize(x, y) {
+                return call_plugin_method("set_plot_size", {"x": x, "y": y});
+            }
+
+            // events
+
+            async function onload_body() {
+                let graphDiv = document.getElementById("graphDiv");
+                await setPlotSize(PLOT_WIDTH, PLOT_HEIGHT);
+                const state_controlToggle = await getEnable(); // retrieve from back-end
+                setToggleState(document.getElementById("controlToggle"), state_controlToggle);
+                showHideElement(graphDiv, state_controlToggle);
+                if (state_controlToggle) {
+                    curve = await getCurve();
+                    buildCurvePlot(curve);
+                }
+                console.log("Loaded");
+            }
+
+            async function onclick_graphDiv(e) {
+                console.log("Click @ (" + e.layerX.toString() + ", " + e.layerY.toString() + ")");
+                if (plotClickIsHandled) {
+                    plotClickIsHandled = false;
+                } else {
+                    await addCurvePoint({"x": (e.layerX - OFFSET_X) / PLOT_WIDTH, "y": (e.layerY - OFFSET_Y) / PLOT_HEIGHT});
+                    curve = await getCurve();
+                    buildCurvePlot(curve);
+                }
+            }
+
+            async function onclick_controlToggle() {
+                console.log("Click @ controlToggle");
+                let graphDiv = document.getElementById("graphDiv");
+                let controlToggle = document.getElementById("controlToggle");
+                const state_controlToggle = getToggleState(controlToggle);
+                await setEnable(!state_controlToggle); // notify back-end
+                setToggleState(controlToggle, !state_controlToggle);
+                showHideElement(graphDiv, !state_controlToggle);
+                if (!state_controlToggle) {
+                    curve = await getCurve();
+                    buildCurvePlot(curve);
+                }
+            }
+
+            async function onclick_plotPoint(e, index) {
+                console.log("Click @ plotPoint " + index.toString());
+                plotClickIsHandled = true; // this must be before the first async call (janky!)
+                await removeCurvePoint(index);
+                curve = await getCurve();
+                buildCurvePlot(curve);
+                //e.stopPropogation();
+            }
+
+            // common
+
+            function buildCurvePlot(curve_points) {
+                // TODO
+                let graphDiv = document.getElementById("graphDiv");
+                let newStr = "<span style=\"font-size:x-small;position:absolute;left:0px;top:0px;\">100%</span><span style=\"font-size:x-small;position:absolute;left:0px;bottom:0px;\">0</span><span style=\"font-size:x-small;position:absolute;left:0px;bottom:50%;writing-mode:vertical-lr;text-orientation:mixed;\">Fan</span><span style=\"font-size:x-small;position:absolute;right:0px;bottom:0px;\">100</span><span style=\"font-size:x-small;position:absolute;left:35%;bottom:0px;\">Temperature (C)</span>";
+                for (let i = 0; i < curve_points.length; i++) {
+                    const point = curve_points[i];
+                    newStr += "<span style=\"position:absolute;"
+                    newStr += "top:" + Math.round(point["y"]*PLOT_HEIGHT + OFFSET_Y).toString() + "px;left:" + Math.round(point["x"]*PLOT_WIDTH + OFFSET_X).toString() + "px;";
+                    newStr += "width:8px;height:8px;background-color:red;\" id=\"plotPoint";
+                    newStr += i.toString() + "\" onclick=\"onclick_plotPoint(event," + i.toString() + ")\"></span>";
+                }
+                graphDiv.innerHTML = newStr;
+            }
+
+            function showHideElement(elem, visible) {
+                if (visible) {
+                    elem.style.visibility = "visible";
+                } else {
+                    elem.style.visibility = "hidden";
+                }
+            }
+
+            function setToggleState(toggle, state) {
+                const ENABLED_CLASS = "gamepaddialog_On_yLrDA";
+                if (state && !toggle.classList.contains(ENABLED_CLASS)) {
+                    toggle.classList.add(ENABLED_CLASS);
+                }
+
+                if (!state && toggle.classList.contains(ENABLED_CLASS)) {
+                    toggle.classList.remove(ENABLED_CLASS);
+                }
+            }
+
+            function getToggleState(toggle) {
+                return toggle.classList.contains("gamepaddialog_On_yLrDA");
+            }
         </script>
     </head>
-    <body onload="onload()">
-        <h2>Hello World</h2>
+    <body onload="onload_body()">
+        <div class="quickaccessmenu_TabGroupPanel_1QO7b Panel Focusable">
+            <div class="quickaccesscontrols_PanelSectionRow_26R5w">
+                <div class="quickaccesscontrols_PanelSectionRow_26R5w">
+                    <div class="gamepaddialog_Field_eKmEX gamepaddialog_WithFirstRow_2bDqk gamepaddialog_ExtraPaddingOnChildrenBelow_3nLNL gamepaddialog_StandardPadding_xIITX gamepaddialog_HighlightOnFocus_2HFrm Panel Focusable" style="--indent-level:0;">
+                        <div class="gamepaddialog_FieldLabelRow_2VcTl">
+                            <div class="gamepaddialog_FieldLabel_3jMlJ">
+                                Custom Fan Curve
+                            </div>
+                            <div class="gamepaddialog_FieldChildren_2rhav">
+                                <div id="controlToggle" tabindex="0" class="gamepaddialog_Toggle_9Ql-o Focusable" onclick="onclick_controlToggle()">
+                                    <div class="gamepaddialog_ToggleRail_2bl0i"></div>
+                                    <div class="gamepaddialog_ToggleSwitch_1PQpp"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="gamepaddialog_FieldDescription_1W1to">Overrides SteamOS fan curve</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="graphDiv" style="height:200px;width:284px;border:2px solid red;position:relative;" onclick="onclick_graphDiv(event)">
+            Some text to show that something is broken :(
+        </div>
     </body>
 </html>
