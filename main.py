@@ -1,6 +1,7 @@
 import json
 import os
 import asyncio
+import time
 
 import logging
 
@@ -179,8 +180,14 @@ class Plugin:
             self.settings["curve"] = DEFAULT_DATA["curve"]
             self.is_changed = True
         on_set_enable(self.settings["enable"])
+        last_time = time.time()
         # work loop
         while True:
+            if (time.time() - last_time) * 0.9 > self.period_s:
+                # detect sleep
+                logging.debug("Detected resume from sleep, overriding fan again")
+                on_set_enable(self.settings["enable"])
+            last_time = time.time()
             if self.is_changed:
                 self.save(self)
                 self.is_changed = False
