@@ -180,19 +180,20 @@
                 }
             }
 
+            const TOGGLE_ON_CLASS = "gamepaddialog_On_3ld7T"
+
             function setToggleState(toggle, state) {
-                const ENABLED_CLASS = "gamepaddialog_On_yLrDA";
-                if (state && !toggle.classList.contains(ENABLED_CLASS)) {
-                    toggle.classList.add(ENABLED_CLASS);
+                if (state && !toggle.classList.contains(TOGGLE_ON_CLASS)) {
+                    toggle.classList.add(TOGGLE_ON_CLASS);
                 }
 
-                if (!state && toggle.classList.contains(ENABLED_CLASS)) {
-                    toggle.classList.remove(ENABLED_CLASS);
+                if (!state && toggle.classList.contains(TOGGLE_ON_CLASS)) {
+                    toggle.classList.remove(TOGGLE_ON_CLASS);
                 }
             }
 
             function getToggleState(toggle) {
-                return toggle.classList.contains("gamepaddialog_On_yLrDA");
+                return toggle.classList.contains(TOGGLE_ON_CLASS);
             }
 
             function sleep(ms) {
@@ -200,79 +201,79 @@
             }
         </script>
     </head>
-    <body onload="onload_body()" style="overflow-x:hidden;">
+    <body onload="onload_body()" style="overflow-x:hidden;margin:0px;">
         <div class="quickaccessmenu_TabGroupPanel_1QO7b Panel Focusable">
-            <div class="quickaccesscontrols_PanelSectionRow_26R5w">
-                <div class="quickaccesscontrols_PanelSectionRow_26R5w">
-                    <div class="gamepaddialog_Field_eKmEX gamepaddialog_WithFirstRow_2bDqk gamepaddialog_ExtraPaddingOnChildrenBelow_3nLNL gamepaddialog_StandardPadding_xIITX gamepaddialog_HighlightOnFocus_2HFrm Panel Focusable" style="--indent-level:0;">
-                        <div class="gamepaddialog_FieldLabelRow_2VcTl">
-                            <div class="gamepaddialog_FieldLabel_3jMlJ">
+            <div class="quickaccesscontrols_PanelSection_2C0g0" style="padding:0px 4px;">
+                <div class="quickaccesscontrols_PanelSectionRow_2VQ88">
+                    <div class="gamepaddialog_Field_S-_La gamepaddialog_WithFirstRow_qFXi6 gamepaddialog_VerticalAlignCenter_3XNvA gamepaddialog_WithDescription_3bMIS gamepaddialog_WithBottomSeparator_1lUZx gamepaddialog_ExtraPaddingOnChildrenBelow_5UO-_ gamepaddialog_StandardPadding_XRBFu gamepaddialog_HighlightOnFocus_wE4V6 Panel Focusable" style="--indent-level:0;">
+                        <div class="gamepaddialog_FieldLabelRow_H9WOq">
+                            <div class="gamepaddialog_FieldLabel_3b0U-">
                                 Custom Fan Curve
                             </div>
-                            <div class="gamepaddialog_FieldChildren_2rhav">
-                                <div id="controlToggle" tabindex="0" class="gamepaddialog_Toggle_9Ql-o Focusable" onclick="onclick_controlToggle()">
-                                    <div class="gamepaddialog_ToggleRail_2bl0i"></div>
-                                    <div class="gamepaddialog_ToggleSwitch_1PQpp"></div>
+                            <div class="gamepaddialog_FieldChildren_14_HB">
+                                <div id="controlToggle" tabindex="0" class="gamepaddialog_Toggle_24G4g Focusable" onclick="onclick_controlToggle()">
+                                    <div class="gamepaddialog_ToggleRail_2JtC3"></div>
+                                    <div class="gamepaddialog_ToggleSwitch_3__OD"></div>
                                 </div>
                             </div>
                         </div>
-                        <div class="gamepaddialog_FieldDescription_1W1to">Overrides SteamOS fan curve</div>
+                        <div class="gamepaddialog_FieldDescription_2OJfk">Overrides SteamOS fan curve</div>
                     </div>
                 </div>
             </div>
         </div>
         <div id="hiderDiv">
-            <div id="graphDiv" style="height:200px;width:270px;border:1px solid #1a9fff;position:relative;background-color:#1a1f2c;border-radius:4px;" onclick="onclick_graphDiv(event)">
+            <div id="graphDiv" style="height:200px;width:270px;border:1px solid #1a9fff;position:relative;background-color:#1a1f2c;border-radius:4px;margin:auto;" onclick="onclick_graphDiv(event)">
                 Some text to show that something is broken :(
             </div>
             <div style="font-size:x-small; text-align:center;">
             Click to add/remove points on the fan curve.
             </div>
             <div class="quickaccessmenu_TabGroupPanel_1QO7b Panel Focusable">
-                <div class="quickaccesscontrols_PanelSectionRow_26R5w">
-                    <div class="quickaccesscontrols_PanelSectionRow_26R5w">
-                        <div class="gamepaddialog_Field_eKmEX gamepaddialog_WithFirstRow_2bDqk gamepaddialog_ExtraPaddingOnChildrenBelow_3nLNL gamepaddialog_StandardPadding_xIITX gamepaddialog_HighlightOnFocus_2HFrm Panel Focusable" style="--indent-level:0;">
-                            <div class="gamepaddialog_FieldLabelRow_2VcTl">
-                                <div class="gamepaddialog_FieldLabel_3jMlJ">
+                <div class="quickaccesscontrols_PanelSection_2C0g0" style="padding:0px 4px;">
+                    <div class="quickaccesscontrols_PanelSectionRow_2VQ88">
+                        <div class="gamepaddialog_Field_S-_La gamepaddialog_WithFirstRow_qFXi6 gamepaddialog_VerticalAlignCenter_3XNvA gamepaddialog_WithDescription_3bMIS gamepaddialog_WithBottomSeparator_1lUZx gamepaddialog_ExtraPaddingOnChildrenBelow_5UO-_ gamepaddialog_StandardPadding_XRBFu gamepaddialog_HighlightOnFocus_wE4V6 Panel Focusable" style="--indent-level:0;">
+                            <div class="gamepaddialog_FieldLabelRow_H9WOq">
+                                <div class="gamepaddialog_FieldLabel_3b0U-">
                                     Linear Interpolation
                                 </div>
-                                <div class="gamepaddialog_FieldChildren_2rhav">
-                                    <div id="interpolToggle" tabindex="0" class="gamepaddialog_Toggle_9Ql-o Focusable" onclick="onclick_interpolToggle()">
-                                        <div class="gamepaddialog_ToggleRail_2bl0i"></div>
-                                        <div class="gamepaddialog_ToggleSwitch_1PQpp"></div>
+                                <div class="gamepaddialog_FieldChildren_14_HB">
+                                    <div id="interpolToggle" tabindex="0" class="gamepaddialog_Toggle_24G4g Focusable" onclick="onclick_interpolToggle()">
+                                        <div class="gamepaddialog_ToggleRail_2JtC3"></div>
+                                        <div class="gamepaddialog_ToggleSwitch_3__OD"></div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="gamepaddialog_FieldDescription_1W1to">Pretends a straight line connects points</div>
+                            <div class="gamepaddialog_FieldDescription_2OJfk">Pretends a straight line connects points</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <!-- Fan Info -->
-        <div class="quickaccesscontrols_PanelSection_3gY0a" onclick="updateBatteryStats()" style="margin-bottom:0px;">
+        <div class="quickaccesscontrols_PanelSection_2C0g0" onclick="updateBatteryStats()" style="margin-bottom:0px;">
             <!--<div class="quickaccesscontrols_PanelSectionTitle_1IigU">
                 <div class="quickaccesscontrols_Text_1cokl">Fan</div>
             </div>-->
             <div class="Panel Focusable" tabindex="0">
-                <div class="quickaccesscontrols_PanelSectionRow_3LM_Z">
-                    <div class="gamepaddialog_Field_eKmEX gamepaddialog_WithFirstRow_2bDqk gamepaddialog_InlineWrapShiftsChildrenBelow_3LCXh gamepaddialog_StandardPadding_xIITX gamepaddialog_HighlightOnFocus_2HFrm Panel Focusable" style="--indent-level:0;padding-left:0px;padding-right:0px;">
-                        <div class="gamepaddialog_FieldLabelRow_2VcTl">
-                            <div class="gamepaddialog_FieldLabel_3jMlJ">Current Fan Speed</div>
-                            <div class="gamepaddialog_FieldChildren_2rhav">
-                                <div class="gamepaddialog_LabelFieldValue_3pteV" id="fanNow"> (|-_-|) </div>
+                <div class="quickaccesscontrols_PanelSectionRow_2VQ88">
+                    <div class="gamepaddialog_Field_S-_La gamepaddialog_WithFirstRow_qFXi6 gamepaddialog_VerticalAlignCenter_3XNvA gamepaddialog_InlineWrapShiftsChildrenBelow_pHUb6 gamepaddialog_WithBottomSeparator_1lUZx gamepaddialog_StandardPadding_XRBFu gamepaddialog_HighlightOnFocus_wE4V6 Panel Focusable" style="--indent-level:0;padding-left:0px;padding-right:0px;">
+                        <div class="gamepaddialog_FieldLabelRow_H9WOq">
+                            <div class="gamepaddialog_FieldLabel_3b0U-">Current Fan Speed</div>
+                            <div class="gamepaddialog_FieldChildren_14_HB">
+                                <div class="gamepaddialog_LabelFieldValue_5Mylh" id="fanNow"> (|-_-|) </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="Panel Focusable" tabindex="0">
-                <div class="quickaccesscontrols_PanelSectionRow_3LM_Z">
-                    <div class="gamepaddialog_Field_eKmEX gamepaddialog_WithFirstRow_2bDqk gamepaddialog_InlineWrapShiftsChildrenBelow_3LCXh gamepaddialog_StandardPadding_xIITX gamepaddialog_HighlightOnFocus_2HFrm Panel Focusable" style="--indent-level:0;padding-left:0px;padding-right:0px;">
-                        <div class="gamepaddialog_FieldLabelRow_2VcTl">
-                            <div class="gamepaddialog_FieldLabel_3jMlJ">Current Temperature</div>
-                            <div class="gamepaddialog_FieldChildren_2rhav">
-                                <div class="gamepaddialog_LabelFieldValue_3pteV" id="tempNow"> (|-_-|) </div>
+                <div class="quickaccesscontrols_PanelSectionRow_2VQ88">
+                    <div class="gamepaddialog_Field_S-_La gamepaddialog_WithFirstRow_qFXi6 gamepaddialog_VerticalAlignCenter_3XNvA gamepaddialog_InlineWrapShiftsChildrenBelow_pHUb6 gamepaddialog_WithBottomSeparator_1lUZx gamepaddialog_StandardPadding_XRBFu gamepaddialog_HighlightOnFocus_wE4V6 Panel Focusable" style="--indent-level:0;padding-left:0px;padding-right:0px;">
+                        <div class="gamepaddialog_FieldLabelRow_H9WOq">
+                            <div class="gamepaddialog_FieldLabel_3b0U-">Current Temperature</div>
+                            <div class="gamepaddialog_FieldChildren_14_HB">
+                                <div class="gamepaddialog_LabelFieldValue_5Mylh" id="tempNow"> (|-_-|) </div>
                             </div>
                         </div>
                     </div>
