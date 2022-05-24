@@ -2,11 +2,14 @@ import json
 import os
 import asyncio
 import time
+import pathlib
+
+HOME_DIR = str(pathlib.Path(os.getcwd()).parent.parent.resolve())
 
 import logging
 
 logging.basicConfig(
-    filename = "/home/deck/.fantastic.log",
+    filename = "/tmp/fantastic.log",
     format = '%(asctime)s %(levelname)s %(message)s',
     filemode = 'w',
     force = True)
@@ -21,7 +24,7 @@ TEMPERATURE_MINIMUM = 0.0
 TEMPERATURE_MAXIMUM = 100.0
 
 DATA_SAVE_FILE = "fantastic.json"
-DATA_SAVE_FOLDER = "/home/deck/.config/fantastic/"
+DATA_SAVE_FOLDER = HOME_DIR + "/.config/fantastic/"
 DATA_SAVE_PATH = DATA_SAVE_FOLDER + DATA_SAVE_FILE
 
 DEFAULT_DATA = {
