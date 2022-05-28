@@ -3,6 +3,7 @@ import os
 import asyncio
 import time
 import pathlib
+import subprocess
 
 HOME_DIR = str(pathlib.Path(os.getcwd()).parent.parent.resolve())
 
@@ -38,10 +39,12 @@ class Plugin:
     settings = None
     is_changed = False
 
-    plot_width = 1;
-    plot_height = 1;
+    plot_width = 1
+    plot_height = 1
 
-    period_s = 1.0;
+    period_s = 1.0
+
+    jupiter_fan_control_was_disabled = False
 
     async def set_curve(self, curve):
         await self.wait_for_ready(self)
@@ -78,7 +81,7 @@ class Plugin:
     async def set_enable(self, enable: bool):
         await self.wait_for_ready(self)
         self.settings["enable"] = enable
-        on_set_enable(enable)
+        self.on_set_enable(self)
         self.is_changed = True
 
     async def get_enable(self) -> bool:
@@ -108,10 +111,39 @@ class Plugin:
     async def set_poll_period(self, period):
         self.period_s = period
 
+    def on_set_enable(self):
+        if self.settings["enable"]:
+            self.disable_jupiter_fan_control(self)
+            on_enable()
+        else:
+            self.enable_jupiter_fan_control(self)
+            on_disable()
+
+    def disable_jupiter_fan_control(self):
+        active = subprocess.Popen(["systemctl", "is-active", "jupiter-fan-control.service"]).wait() == 0
+        if active:
+            logging.info("Stopping jupiter-fan-control.service so it doesn't interfere")
+            # only disable if currently active
+            self.jupiter_fan_control_was_disabled = True
+            stop_p = subprocess.Popen(["systemctl", "stop", "jupiter-fan-control.service"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stop_p.wait()
+            logging.debug("systemctl stop jupiter-fan-control.service stdout:\n" + stop_p.stdout.read().decode())
+            logging.debug("systemctl stop jupiter-fan-control.service stderr:\n" + stop_p.stderr.read().decode())
+
+    def enable_jupiter_fan_control(self):
+        if self.jupiter_fan_control_was_disabled:
+            logging.info("Starting jupiter-fan-control.service so it doesn't interfere")
+            # only re-enable if I disabled it
+            self.jupiter_fan_control_was_disabled = False
+            start_p = subprocess.Popen(["systemctl", "start", "jupiter-fan-control.service"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            start_p.wait()
+            logging.debug("systemctl start jupiter-fan-control.service stdout:\n" + start_p.stdout.read().decode())
+            logging.debug("systemctl start jupiter-fan-control.service stderr:\n" + start_p.stderr.read().decode())
+
     def save(self):
         if not os.path.exists(DATA_SAVE_FOLDER):
             os.mkdir(DATA_SAVE_FOLDER)
-        with open(DATA_SAVE_PATH, "w") as data_file :
+        with open(DATA_SAVE_PATH, "w") as data_file:
             json.dump(self.settings, data_file)
 
     async def wait_for_ready(self):
@@ -172,7 +204,7 @@ class Plugin:
         else:
             self.settings = dict(DEFAULT_DATA)
         try:
-            self.settings["version"]
+            str(self.settings["version"])
         except:
             self.settings = dict(DEFAULT_DATA)
         while self.settings["version"] != DEFAULT_DATA["version"]:
@@ -182,14 +214,14 @@ class Plugin:
             self.settings["interpolate"] = DEFAULT_DATA["interpolate"]
             self.settings["curve"] = DEFAULT_DATA["curve"]
             self.is_changed = True
-        on_set_enable(self.settings["enable"])
+        self.on_set_enable(self)
         last_time = time.time()
         # work loop
         while True:
             if (time.time() - last_time) * 0.9 > self.period_s:
                 # detect sleep
                 logging.debug("Detected resume from sleep, overriding fan again")
-                on_set_enable(self.settings["enable"])
+                self.on_set_enable(self)
             last_time = time.time()
             if self.is_changed:
                 self.save(self)
@@ -225,9 +257,3 @@ def on_disable():
     with open("/sys/class/hwmon/hwmon5/recalculate", "w") as f:
         f.write("0")
     # TODO restart system fan control
-
-def on_set_enable(enable):
-    if enable:
-        on_enable()
-    else:
-        on_disable()

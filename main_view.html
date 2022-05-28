@@ -132,7 +132,6 @@
             // common
 
             function buildCurvePlot(curve_points) {
-                // TODO
                 let graphDiv = document.getElementById("graphDiv");
                 let newStr = "<span style=\"font-size:x-small;position:absolute;left:1px;top:-1px;\">100%</span><span style=\"font-size:x-small;position:absolute;left:1px;bottom:-1px;\">0</span><span style=\"font-size:x-small;position:absolute;left:-2px;bottom:50%;writing-mode:vertical-lr;text-orientation:mixed;\">Fan</span><span style=\"font-size:x-small;position:absolute;right:1px;bottom:-1px;\">100</span><span style=\"font-size:x-small;position:absolute;left:35%;bottom:-1px;\">Temperature (°C)</span>";
                 for (let i = 0; i < curve_points.length; i++) {
@@ -142,7 +141,9 @@
                     newStr += "width:8px;height:8px;background-color:#1a9fff;border-radius:4px\" id=\"plotPoint";
                     newStr += i.toString() + "\" onclick=\"onclick_plotPoint(event," + i.toString() + ")\"></span>";
                 }
+                //graphDiv.innerHTML = "";
                 graphDiv.innerHTML = newStr;
+                console.log("Fan graph redrawn");
             }
 
             function pollStats() {
@@ -202,10 +203,17 @@
         </script>
     </head>
     <body onload="onload_body()" style="overflow-x:hidden;margin:0px;">
+        <!-- Spacer (moves top out of shadow above it) -->
+        <div class="quickaccessmenu_TabGroupPanel_1QO7b">
+            <div class="quickaccesscontrols_PanelSection_2C0g0" style="margin-bottom:6px;">
+                <!--<div class="quickaccesscontrols_PanelSectionRow_2VQ88">
+                </div>-->
+            </div>
+        </div>
         <div class="quickaccessmenu_TabGroupPanel_1QO7b Panel Focusable">
             <div class="quickaccesscontrols_PanelSection_2C0g0" style="padding:0px 4px;">
                 <div class="quickaccesscontrols_PanelSectionRow_2VQ88">
-                    <div class="gamepaddialog_Field_S-_La gamepaddialog_WithFirstRow_qFXi6 gamepaddialog_VerticalAlignCenter_3XNvA gamepaddialog_WithDescription_3bMIS gamepaddialog_WithBottomSeparator_1lUZx gamepaddialog_ExtraPaddingOnChildrenBelow_5UO-_ gamepaddialog_StandardPadding_XRBFu gamepaddialog_HighlightOnFocus_wE4V6 Panel Focusable" style="--indent-level:0;">
+                    <div class="gamepaddialog_Field_S-_La gamepaddialog_WithFirstRow_qFXi6 gamepaddialog_VerticalAlignCenter_3XNvA gamepaddialog_WithDescription_3bMIS gamepaddialog_WithBottomSeparatorStandard_3s1Rk gamepaddialog_ExtraPaddingOnChildrenBelow_5UO-_ gamepaddialog_StandardPadding_XRBFu gamepaddialog_HighlightOnFocus_wE4V6 Panel Focusable" style="--indent-level:0;">
                         <div class="gamepaddialog_FieldLabelRow_H9WOq">
                             <div class="gamepaddialog_FieldLabel_3b0U-">
                                 Custom Fan Curve
@@ -232,7 +240,7 @@
             <div class="quickaccessmenu_TabGroupPanel_1QO7b Panel Focusable">
                 <div class="quickaccesscontrols_PanelSection_2C0g0" style="padding:0px 4px;">
                     <div class="quickaccesscontrols_PanelSectionRow_2VQ88">
-                        <div class="gamepaddialog_Field_S-_La gamepaddialog_WithFirstRow_qFXi6 gamepaddialog_VerticalAlignCenter_3XNvA gamepaddialog_WithDescription_3bMIS gamepaddialog_WithBottomSeparator_1lUZx gamepaddialog_ExtraPaddingOnChildrenBelow_5UO-_ gamepaddialog_StandardPadding_XRBFu gamepaddialog_HighlightOnFocus_wE4V6 Panel Focusable" style="--indent-level:0;">
+                        <div class="gamepaddialog_Field_S-_La gamepaddialog_WithFirstRow_qFXi6 gamepaddialog_VerticalAlignCenter_3XNvA gamepaddialog_WithDescription_3bMIS gamepaddialog_WithBottomSeparatorStandard_3s1Rk gamepaddialog_ExtraPaddingOnChildrenBelow_5UO-_ gamepaddialog_StandardPadding_XRBFu gamepaddialog_HighlightOnFocus_wE4V6 Panel Focusable" style="--indent-level:0;">
                             <div class="gamepaddialog_FieldLabelRow_H9WOq">
                                 <div class="gamepaddialog_FieldLabel_3b0U-">
                                     Linear Interpolation
@@ -257,7 +265,7 @@
             </div>-->
             <div class="Panel Focusable" tabindex="0">
                 <div class="quickaccesscontrols_PanelSectionRow_2VQ88">
-                    <div class="gamepaddialog_Field_S-_La gamepaddialog_WithFirstRow_qFXi6 gamepaddialog_VerticalAlignCenter_3XNvA gamepaddialog_InlineWrapShiftsChildrenBelow_pHUb6 gamepaddialog_WithBottomSeparator_1lUZx gamepaddialog_StandardPadding_XRBFu gamepaddialog_HighlightOnFocus_wE4V6 Panel Focusable" style="--indent-level:0;padding-left:0px;padding-right:0px;">
+                    <div class="gamepaddialog_Field_S-_La gamepaddialog_WithFirstRow_qFXi6 gamepaddialog_VerticalAlignCenter_3XNvA gamepaddialog_InlineWrapShiftsChildrenBelow_pHUb6 gamepaddialog_WithBottomSeparatorStandard_3s1Rk gamepaddialog_StandardPadding_XRBFu gamepaddialog_HighlightOnFocus_wE4V6 Panel Focusable" style="--indent-level:0;padding-left:0px;padding-right:0px;">
                         <div class="gamepaddialog_FieldLabelRow_H9WOq">
                             <div class="gamepaddialog_FieldLabel_3b0U-">Current Fan Speed</div>
                             <div class="gamepaddialog_FieldChildren_14_HB">
@@ -269,7 +277,7 @@
             </div>
             <div class="Panel Focusable" tabindex="0">
                 <div class="quickaccesscontrols_PanelSectionRow_2VQ88">
-                    <div class="gamepaddialog_Field_S-_La gamepaddialog_WithFirstRow_qFXi6 gamepaddialog_VerticalAlignCenter_3XNvA gamepaddialog_InlineWrapShiftsChildrenBelow_pHUb6 gamepaddialog_WithBottomSeparator_1lUZx gamepaddialog_StandardPadding_XRBFu gamepaddialog_HighlightOnFocus_wE4V6 Panel Focusable" style="--indent-level:0;padding-left:0px;padding-right:0px;">
+                    <div class="gamepaddialog_Field_S-_La gamepaddialog_WithFirstRow_qFXi6 gamepaddialog_VerticalAlignCenter_3XNvA gamepaddialog_InlineWrapShiftsChildrenBelow_pHUb6 gamepaddialog_WithBottomSeparatorStandard_3s1Rk gamepaddialog_StandardPadding_XRBFu gamepaddialog_HighlightOnFocus_wE4V6 Panel Focusable" style="--indent-level:0;padding-left:0px;padding-right:0px;">
                         <div class="gamepaddialog_FieldLabelRow_H9WOq">
                             <div class="gamepaddialog_FieldLabel_3b0U-">Current Temperature</div>
                             <div class="gamepaddialog_FieldChildren_14_HB">
