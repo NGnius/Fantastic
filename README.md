@@ -1,9 +1,12 @@
 # Fantastic
 
+![plugin_demo](./extras/ui.png)
+
 Steam Deck fan controls.
 
 This is generated from the template plugin for the [SteamOS Plugin Loader](https://github.com/SteamDeckHomebrew/PluginLoader).
-You will need that installed for this plugin to work.
+
+Once Plugin Loader is installed, you can get this plugin from the [plugin store](https://beta.deckbrew.xyz/) (that shopping basket at the top of the plugin menu).
 
 ## License
 
