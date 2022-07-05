@@ -1,6 +1,6 @@
 # Fantastic
 
-![plugin_demo](./extras/ui.png)
+![plugin_demo](./assets/ui.png)
 
 Steam Deck fan controls.
 

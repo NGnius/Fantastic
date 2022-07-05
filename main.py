@@ -10,7 +10,7 @@ HOME_DIR = str(pathlib.Path(os.getcwd()).parent.parent.resolve())
 import logging
 
 logging.basicConfig(
-    filename = "/tmp/fantastic.log",
+    filename = "/tmp/fantastic.old.log",
     format = '%(asctime)s %(levelname)s %(message)s',
     filemode = 'w',
     force = True)
@@ -34,6 +34,8 @@ DEFAULT_DATA = {
     "interpolate": True,
     "curve": [], # items are {x: int (distance from left), y: int (distance from top, NOT bottom)}
 }
+
+logging.debug(f"CWD: {os.getcwd()}")
 
 class Plugin:
     settings = None
