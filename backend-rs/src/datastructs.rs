@@ -22,7 +22,7 @@ impl Settings {
 
 impl From<SettingsJson> for Settings {
     fn from(mut other: SettingsJson) -> Self {
-        match other.version {
+        let mut result = match other.version {
             0 => Self {
                 version: 1,
                 enable: other.enable,
@@ -65,7 +65,9 @@ impl From<SettingsJson> for Settings {
                     max: 100.0,
                 },
             }
-        }
+        };
+        result.sort_curve();
+        result
     }
 }
 

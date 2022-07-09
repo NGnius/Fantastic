@@ -1,1 +1,23 @@
-{"version": 0, "enable": true, "interpolate": true, "curve": [{"x": 0.2740740740740741, "y": 0.815}, {"x": 0.725925925925926, "y": 0.665}, {"x": 0.9074074074074074, "y": 0.08}]}
+{
+  "version": 1,
+  "enable": true,
+  "interpolate": true,
+  "curve": [
+    {
+      "x": 0.5074626865671642,
+      "y": 0.225
+    },
+    {
+      "x": 0.6902985074626866,
+      "y": 0.795
+    }
+  ],
+  "fan_bounds": {
+    "min": 1.0,
+    "max": 7000.0
+  },
+  "temperature_bounds": {
+    "min": 0.0,
+    "max": 100.0
+  }
+}
