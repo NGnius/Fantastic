@@ -955,9 +955,9 @@ dependencies = [
 
 [[package]]
 name = "usdpl-back"
-version = "0.5.2"
+version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1e504c8c884d63ae224ebdbcc506112a7a24250a2fbb329f742d443d5fecda7"
+checksum = "6d237439986405621b9b6da350aefcfca9e2b808c10695f55f8b80ccc324b2c0"
 dependencies = [
  "bytes",
  "tokio",
