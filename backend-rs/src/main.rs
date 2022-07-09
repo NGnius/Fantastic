@@ -12,7 +12,8 @@ const PORT: u16 = 44444;
 
 fn main() -> Result<(), ()> {
     WriteLogger::init(
-        LevelFilter::Debug,
+        #[cfg(debug_assertions)]{LevelFilter::Debug},
+        #[cfg(not(debug_assertions))]{LevelFilter::Info},
         Default::default(),
         std::fs::File::create("/tmp/fantastic.log").unwrap()
     ).unwrap();
