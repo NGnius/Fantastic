@@ -41,3 +41,4 @@ yalc.lock
 
 # ignore Rust compiler files
 /backend-rs/target
+backend
