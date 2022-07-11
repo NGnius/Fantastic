@@ -5,6 +5,7 @@
     "publish": {
         "discord_id": "106537989684887552",
         "description": "Fan controls",
-        "tags": [ "utility", "fan-control" ]
+        "tags": [ "utility", "fan-control" ],
+        "image": "https://raw.githubusercontent.com/NGnius/Fantastic/main/assets/thumbnail.png"
     }
 }
