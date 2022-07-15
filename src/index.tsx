@@ -285,6 +285,10 @@ export default definePlugin((serverApi: ServerAPI) => {
   (async function(){
       await backend.initBackend();
       usdplReady = true;
+      backend.getEnabled().then((enabled: boolean) => {
+        //@ts-ignore
+        SteamClient.System.SetBetaFanControl(!enabled);
+      });
     })();
 
   return {
