@@ -18,6 +18,9 @@ import {Canvas} from "./canvas";
 const POINT_SIZE = 32;
 
 var periodicHook: any = null;
+var usdplReady: boolean = false;
+
+var curve_backup: {x: number, y: number}[] = [];
 
 const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
   // const [result, setResult] = useState<number | undefined>();
@@ -39,8 +42,12 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
   const [interpolGlobal, setInterpol] = useState<boolean>(false);
   const [serverApiGlobal, setServerApi] = useState<ServerAPI>(serverAPI);
   const [firstTime, setFirstTime] = useState<boolean>(true);
-  const [usdplReady, setUsdplReady] = useState<boolean>(false);
-  const [curveGlobal, setCurve] = useState<{x: number, y: number}[]>([]);
+  const [curveGlobal, setCurve_internal] = useState<{x: number, y: number}[]>(curve_backup);
+
+  const setCurve = (value: {x: number, y: number}[]) => {
+    setCurve_internal(value);
+    curve_backup = value;
+  }
 
   const [temperatureGlobal, setTemperature] = useState<number>(-273.15);
   const [fanRpmGlobal, setFanRpm] = useState<number>(-1337);
@@ -161,15 +168,15 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
   if (firstTime) {
     setFirstTime(false);
     setServerApi(serverAPI);
-    (async function(){
-      await backend.initBackend();
-      setUsdplReady(true);
-      backend.resolve(backend.getEnabled(), setEnable);
-      backend.resolve(backend.getInterpolate(), setInterpol);
-      backend.resolve(backend.getCurve(), setCurve);
-      backend.resolve(backend.getTemperature(), setTemperature);
-      backend.resolve(backend.getFanRpm(), setFanRpm);
-    })();
+    backend.resolve(backend.getEnabled(), setEnable);
+    backend.resolve(backend.getInterpolate(), setInterpol);
+    backend.resolve(backend.getCurve(), setCurve);
+    backend.resolve(backend.getTemperature(), setTemperature);
+    backend.resolve(backend.getFanRpm(), setFanRpm);
+
+    if (periodicHook != null) {
+      clearInterval(periodicHook);
+    }
 
     periodicHook = setInterval(function() {
         backend.resolve(backend.getTemperature(), setTemperature);
@@ -274,6 +281,11 @@ export default definePlugin((serverApi: ServerAPI) => {
   serverApi.routerHook.addRoute("/decky-plugin-test", DeckyPluginRouterTest, {
     exact: true,
   });
+
+  (async function(){
+      await backend.initBackend();
+      usdplReady = true;
+    })();
 
   return {
     title: <div className={staticClasses.Title}>Fantastic</div>,
