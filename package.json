@@ -14,7 +14,8 @@
   "keywords": [
     "decky",
     "plugin",
-    "plugin-template",
+    "utility",
+    "fan",
     "steam-deck",
     "deck"
   ],
@@ -39,8 +40,16 @@
     "typescript": "^4.6.4"
   },
   "dependencies": {
-    "decky-frontend-lib": "*",
+    "decky-frontend-lib": "^1.0.1",
     "react-icons": "^4.3.1",
     "usdpl-front": "file:./src/usdpl"
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "ignoreMissing": [
+        "react",
+        "react-dom"
+      ]
+    }
   }
 }
