@@ -156,6 +156,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
       ctx.stroke();
       ctx.fill();
     }
+    console.debug("Rendered fan graph canvas frame", frameCount);
     //console.debug("Drew canvas with " + curveGlobal.length.toString() + " points; " + width.toString() + "x" + height.toString());
     //ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     //ctx.fillStyle = '#000000';
