@@ -11,6 +11,7 @@ import {
 } from "decky-frontend-lib";
 import { VFC, useState } from "react";
 import { FaFan } from "react-icons/fa";
+import { SiOnlyfans } from "react-icons/si";
 
 import * as backend from "./backend";
 import {Canvas} from "./canvas";
@@ -292,10 +293,16 @@ export default definePlugin((serverApi: ServerAPI) => {
       });
     })();
 
+  let ico = <FaFan />;
+  let now = new Date();
+  if (now.getDate() == 1 && now.getMonth() == 3) {
+    ico = <SiOnlyfans/>;
+  }
+
   return {
     title: <div className={staticClasses.Title}>Fantastic</div>,
     content: <Content serverAPI={serverApi} />,
-    icon: <FaFan />,
+    icon: ico,
     onDismount() {
       clearInterval(periodicHook!);
       serverApi.routerHook.removeRoute("/decky-plugin-test");
