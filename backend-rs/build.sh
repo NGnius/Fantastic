@@ -1,4 +1,5 @@
 #!/bin/bash
 
 cross build --release
-cp ./target/release/fantastic-rs ../backend
+mkdir ../bin
+cp ./target/release/fantastic-rs ../bin/backend
