@@ -41,7 +41,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
 
   const [enabledGlobal, setEnableInternal] = useState<boolean>(false);
   const [interpolGlobal, setInterpol] = useState<boolean>(false);
-  const [serverApiGlobal, setServerApi] = useState<ServerAPI>(serverAPI);
+  const [_serverApiGlobal, setServerApi] = useState<ServerAPI>(serverAPI);
   const [firstTime, setFirstTime] = useState<boolean>(true);
   const [curveGlobal, setCurve_internal] = useState<{x: number, y: number}[]>(curve_backup);
 
@@ -87,6 +87,9 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
   }
 
   function drawCanvas(ctx: any, frameCount: number): void {
+    if (frameCount % 100 > 1) {
+      return;
+    }
     const width: number = ctx.canvas.width;
     const height: number = ctx.canvas.height;
 

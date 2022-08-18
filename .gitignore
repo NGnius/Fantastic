@@ -46,3 +46,4 @@ backend
 
 # packaged teasers
 *.zip
+*.tar.gz
