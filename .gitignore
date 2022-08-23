@@ -42,6 +42,8 @@ yalc.lock
 # ignore Rust compiler files
 /backend-rs/target
 /bin/backend
+/backend/target
+/backend/out
 
 # packaged teasers
 *.zip

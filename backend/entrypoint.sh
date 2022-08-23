@@ -5,4 +5,6 @@ echo "Container's IP address: `awk 'END{print $1}' /etc/hosts`"
 
 cd /backend
 
-make
+cargo build --release
+mkdir -p out
+cp target/release/fantastic-rs out/backend
