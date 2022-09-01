@@ -1,5 +1,15 @@
 #!/bin/bash
 
-$HOME/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo build --release
+echo "--- Rust version info ---"
+rustup --version
+rustc --version
+cargo --version
+
+echo "--- Building plugin backend ---"
+cargo build --release
 mkdir -p out
 cp target/release/fantastic-rs out/backend
+
+echo " --- Cleaning up ---"
+# remove root-owned target folder
+cargo clean

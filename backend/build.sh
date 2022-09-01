@@ -1,5 +1,5 @@
 #!/bin/bash
 
-cross build --release
-mkdir out
-cp ./target/release/fantastic-rs out/backend
+cargo build --target x86_64-unknown-linux-musl --release
+mkdir -p ../bin
+cp ./target/x86_64-unknown-linux-musl/release/fantastic-rs ../bin/backend
