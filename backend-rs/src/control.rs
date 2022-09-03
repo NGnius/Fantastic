@@ -56,7 +56,9 @@ impl ControlRuntime {
                                 continue;
                             }
                         };
-                        Self::on_set_enable(&settings, &state);
+                        if settings.enable {
+                            Self::on_set_enable(&settings, &state);
+                        }
                     }
                 }
                 start_time = Instant::now();
@@ -82,6 +84,15 @@ impl ControlRuntime {
                             log::error!("SettingsJson.save({}) error: {}", settings_path(&state.home).display(), e);
                         }
                         Self::on_set_enable(&settings, &state);
+                        drop(state);
+                        let mut state = match runtime_state.write() {
+                            Ok(x) => x,
+                            Err(e) => {
+                                log::error!("runtime failed to acquire state write lock: {}", e);
+                                continue;
+                            }
+                        };
+                        state.dirty = false;
                     }
                 }
                 { // fan control
@@ -200,6 +211,7 @@ impl ControlRuntime {
                 else:
                     return 0.5
         */
+        // step fan, what are you doing?
         if let Some(index) = index {
             settings.curve[index].y
         } else {
