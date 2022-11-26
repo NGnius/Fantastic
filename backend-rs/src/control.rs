@@ -8,6 +8,8 @@ use std::time::{Duration, Instant};
 use super::datastructs::{Settings, State, GraphPoint};
 use super::json::SettingsJson;
 
+const VALVE_FAN_SERVICE: &str = "jupiter-fan-control.service";
+
 pub struct ControlRuntime {
     settings: Arc<RwLock<Settings>>,
     state: Arc<RwLock<State>>,
@@ -104,6 +106,7 @@ impl ControlRuntime {
                         }
                     };
                     if settings.enable {
+                        Self::enforce_jupiter_status(true);
                         Self::do_fan_control(&settings);
                     }
                 }
@@ -113,7 +116,8 @@ impl ControlRuntime {
     }
 
     fn on_set_enable(settings: &Settings, _state: &State) {
-        // TODO stop/start jupiter fan control (or maybe let the UI handle that?)
+        // stop/start jupiter fan control (since the client-side way of doing this was removed :( )
+        Self::enforce_jupiter_status(settings.enable);
         if let Err(e) = crate::sys::write_fan_recalc(settings.enable) {
             log::error!("runtime failed to write to fan recalculate file: {}", e);
         }
@@ -220,6 +224,51 @@ impl ControlRuntime {
             } else {
                 0.5
             }
+        }
+    }
+
+    fn enforce_jupiter_status(enabled: bool) {
+        // enabled refers to whether this plugin's functionality is enabled,
+        // not the jupiter fan control service
+        let service_status = Self::detect_jupiter_fan_service();
+        log::debug!("fan control service is enabled? {}", service_status);
+        if enabled == service_status {
+            // do not run Valve's fan service along with Fantastic, since they fight
+            if enabled {
+                Self::stop_fan_service();
+            } else {
+                Self::start_fan_service();
+            }
+        }
+    }
+
+    fn detect_jupiter_fan_service() -> bool {
+        match std::process::Command::new("systemctl")
+            .args(["is-active", VALVE_FAN_SERVICE])
+            .output() {
+            Ok(cmd) => String::from_utf8_lossy(&cmd.stdout).trim() == "active",
+            Err(e) => {
+                log::error!("`systemctl is-active {}` err: {}", VALVE_FAN_SERVICE, e);
+                false
+            }
+        }
+    }
+
+    fn start_fan_service() {
+        match std::process::Command::new("systemctl")
+            .args(["start", VALVE_FAN_SERVICE])
+            .output() {
+            Err(e) => log::error!("`systemctl start {}` err: {}", VALVE_FAN_SERVICE, e),
+            Ok(out) => log::debug!("started `{}`:\nstdout:{}\nstderr:{}", VALVE_FAN_SERVICE, String::from_utf8_lossy(&out.stdout), String::from_utf8_lossy(&out.stderr)),
+        }
+    }
+
+    fn stop_fan_service() {
+        match std::process::Command::new("systemctl")
+            .args(["stop", VALVE_FAN_SERVICE])
+            .output() {
+            Err(e) => log::error!("`systemctl stop {}` err: {}", VALVE_FAN_SERVICE, e),
+            Ok(out) => log::debug!("stopped `{}`:\nstdout:{}\nstderr:{}", VALVE_FAN_SERVICE, String::from_utf8_lossy(&out.stdout), String::from_utf8_lossy(&out.stderr)),
         }
     }
 }

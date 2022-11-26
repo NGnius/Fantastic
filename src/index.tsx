@@ -55,8 +55,6 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
 
   function setEnable(enable: boolean) {
     setEnableInternal(enable);
-    //@ts-ignore
-    SteamClient.System.SetBetaFanControl(!enable);
   }
 
   function onClickCanvas(e: any) {
@@ -290,10 +288,7 @@ export default definePlugin((serverApi: ServerAPI) => {
   (async function(){
       await backend.initBackend();
       usdplReady = true;
-      backend.getEnabled().then((enabled: boolean) => {
-        //@ts-ignore
-        SteamClient.System.SetBetaFanControl(!enabled);
-      });
+      backend.getEnabled();
     })();
 
   let ico = <FaFan />;
