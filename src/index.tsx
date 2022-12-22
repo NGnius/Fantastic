@@ -3,11 +3,10 @@ import {
   DialogButton,
   PanelSection,
   PanelSectionRow,
+  Field,
   ServerAPI,
   ToggleField,
   staticClasses,
-  gamepadDialogClasses,
-  joinClassNames,
 } from "decky-frontend-lib";
 import { VFC, useState } from "react";
 import { FaFan } from "react-icons/fa";
@@ -20,6 +19,10 @@ const POINT_SIZE = 32;
 
 var periodicHook: any = null;
 var usdplReady: boolean = false;
+
+var name: string = "";
+var version: string = "";
+var egg = 0;
 
 var curve_backup: {x: number, y: number}[] = [];
 
@@ -90,7 +93,6 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
     }
     const width: number = ctx.canvas.width;
     const height: number = ctx.canvas.height;
-
     ctx.strokeStyle = "#1a9fff";
     ctx.fillStyle = "#1a9fff";
     ctx.lineWidth = 2;
@@ -106,9 +108,42 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
     ctx.arc(90, 65, 5, 0, Math.PI * 2, true);  // Right eye*/
     //ctx.beginPath();
     //ctx.moveTo(0, height);
+
+    // graph helper lines
+    ctx.beginPath();
+    ctx.strokeStyle = "#093455";
+    //ctx.fillStyle = "#093455";
+    const totalLines = 7;
+    const lineDistance = 1 / (totalLines + 1);
+    for (let i = 1; i <= totalLines; i++) {
+      ctx.moveTo(lineDistance * i * width, 0);
+      ctx.lineTo(lineDistance * i * width, height);
+      ctx.moveTo(0, lineDistance * i * height);
+      ctx.lineTo(width, lineDistance * i * height);
+    }
+    ctx.stroke();
+    //ctx.fill();
+
+    ctx.beginPath();
+    ctx.strokeStyle = "#1a9fff";
+    ctx.fillStyle = "#1a9fff";
+
+    // axis labels
+    ctx.textAlign = "center";
+    ctx.rotate(- Math.PI / 2);
+    ctx.fillText("Fan RPM", - height / 2, 12); // Y axis is rotated 90 degrees
+    ctx.rotate(Math.PI / 2);
+    ctx.fillText("Temperature", width / 2, height - 4);
+    // graph data labels
+    ctx.textAlign = "start"; // default
+    ctx.fillText("0", 2, height - 2);
+    ctx.fillText("100%", 2, 9);
+    ctx.textAlign = "right";
+    ctx.fillText("100°C", width - 2, height - 2);
+
+    ctx.moveTo(0, height);
     if (interpolGlobal) {
-      ctx.beginPath();
-      ctx.moveTo(0, height);
+      //ctx.beginPath();
       for (let i = 0; i < curveGlobal.length; i++) {
         const canvasHeight = (1 - curveGlobal[i].y) * height;
         const canvasWidth = curveGlobal[i].x * width;
@@ -119,11 +154,8 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
       }
       ctx.lineTo(width, 0);
       //ctx.moveTo(width, 0);
-      ctx.stroke();
-      ctx.fill();
     } else {
-      ctx.beginPath();
-      ctx.moveTo(0, height);
+      //ctx.beginPath();
       for (let i = 0; i < curveGlobal.length - 1; i++) {
         const canvasHeight = (1 - curveGlobal[i].y) * height;
         const canvasWidth = curveGlobal[i].x * width;
@@ -153,11 +185,10 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
         ctx.moveTo(canvasWidth2, canvasHeight2);
         ctx.lineTo(canvasWidth2, height);
       }
-
       //ctx.moveTo(width, 0);
-      ctx.stroke();
-      ctx.fill();
     }
+    ctx.stroke();
+    ctx.fill();
     console.debug("Rendered fan graph canvas frame", frameCount);
     //console.debug("Drew canvas with " + curveGlobal.length.toString() + " points; " + width.toString() + "x" + height.toString());
     //ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -194,35 +225,21 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
     );
   }
 
-  const FieldWithSeparator = joinClassNames(gamepadDialogClasses.Field, gamepadDialogClasses.WithBottomSeparatorStandard);
-
   // TODO handle clicking on fan curve nodes
 
   return (
     <PanelSection>
       <PanelSectionRow>
-        <div className={FieldWithSeparator}>
-          <div className={gamepadDialogClasses.FieldLabelRow}>
-            <div className={gamepadDialogClasses.FieldLabel}>
-            Current Fan Speed
-            </div>
-            <div className={gamepadDialogClasses.FieldChildren}>
-            {fanRpmGlobal.toFixed(0) + " RPM"}
-            </div>
-          </div>
-        </div>
+        <Field
+          label="Current Fan Speed">
+          {fanRpmGlobal.toFixed(0) + " RPM"}
+        </Field>
       </PanelSectionRow>
       <PanelSectionRow>
-        <div className={FieldWithSeparator}>
-          <div className={gamepadDialogClasses.FieldLabelRow}>
-            <div className={gamepadDialogClasses.FieldLabel}>
-            Current Temperature
-            </div>
-            <div className={gamepadDialogClasses.FieldChildren}>
-            {temperatureGlobal.toFixed(1) + " °C"}
-            </div>
-          </div>
-        </div>
+        <Field
+          label="Current Temperature">
+          {temperatureGlobal.toFixed(1) + " °C"}
+        </Field>
       </PanelSectionRow>
       <PanelSectionRow>
         <ToggleField
@@ -265,6 +282,13 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
         />
       </PanelSectionRow>
       }
+      <PanelSectionRow>
+        <Field
+          label={name}
+          onClick={()=> { egg++; }}>
+          {egg % 10 == 9 ? "by NGnius" : "v" + version}
+        </Field>
+      </PanelSectionRow>
     </PanelSection>
   );
 };
@@ -289,6 +313,8 @@ export default definePlugin((serverApi: ServerAPI) => {
       await backend.initBackend();
       usdplReady = true;
       backend.getEnabled();
+      name = await backend.getName();
+      version = await backend.getVersion();
     })();
 
   let ico = <FaFan />;

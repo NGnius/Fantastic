@@ -53,6 +53,10 @@ export async function getVersion(): Promise<string> {
     return (await call_backend("version", []))[0];
 }
 
+export async function getName(): Promise<string> {
+    return (await call_backend("name", []))[0];
+}
+
 export async function getCurve(): Promise<{"x": number, "y": number}[]> {
     return (await call_backend("get_curve", []))[0];
 }
