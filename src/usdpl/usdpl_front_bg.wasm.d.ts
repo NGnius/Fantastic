@@ -2,13 +2,19 @@
 /* eslint-disable */
 export const memory: WebAssembly.Memory;
 export function init_usdpl(a: number): void;
-export function target(a: number): void;
+export function target_usdpl(a: number): void;
+export function version_usdpl(a: number): void;
+export function set_value(a: number, b: number, c: number): number;
+export function get_value(a: number, b: number): number;
 export function call_backend(a: number, b: number, c: number, d: number): number;
-export function __wbindgen_malloc(a: number): number;
-export function __wbindgen_realloc(a: number, b: number, c: number): number;
+export function init_tr(a: number, b: number): number;
+export function tr(a: number, b: number, c: number): void;
+export function tr_n(a: number, b: number, c: number, d: number): void;
+export function __wbindgen_export_0(a: number): number;
+export function __wbindgen_export_1(a: number, b: number, c: number): number;
 export const __wbindgen_export_2: WebAssembly.Table;
-export function _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h2bd47cee569ae4c6(a: number, b: number, c: number): void;
+export function __wbindgen_export_3(a: number, b: number, c: number): void;
 export function __wbindgen_add_to_stack_pointer(a: number): number;
-export function __wbindgen_free(a: number, b: number): void;
-export function __wbindgen_exn_store(a: number): void;
-export function wasm_bindgen__convert__closures__invoke2_mut__hfe1195d34914cc54(a: number, b: number, c: number, d: number): void;
+export function __wbindgen_export_4(a: number, b: number): void;
+export function __wbindgen_export_5(a: number): void;
+export function __wbindgen_export_6(a: number, b: number, c: number, d: number): void;
