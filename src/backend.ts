@@ -1,4 +1,4 @@
-import {init_usdpl, target, init_embedded, call_backend} from "usdpl-front";
+import {init_usdpl, target_usdpl, init_embedded, call_backend} from "usdpl-front";
 
 const USDPL_PORT: number = 44444;
 
@@ -27,7 +27,7 @@ export async function initBackend() {
     // init usdpl
     await init_embedded();
     init_usdpl(USDPL_PORT);
-    console.log("USDPL started for framework: " + target());
+    console.log("FANTASTIC: USDPL started for framework: " + target_usdpl());
     //setReady(true);
 }
 
