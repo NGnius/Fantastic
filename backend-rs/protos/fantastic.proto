@@ -1,0 +1,136 @@
+syntax = "proto3";
+
+package fantastic;
+
+// The most amazing fan service
+service Fan {
+  // Send back the exact same message as received
+  rpc echo (EchoMessage) returns (EchoMessage);
+
+  // Hello world
+  rpc hello (NameMessage) returns (HelloResponse);
+
+  // Fantastic version info
+  rpc version (Empty) returns (VersionMessage);
+
+  // Fantastic version number string
+  rpc version_str (Empty) returns (VersionDisplayMessage);
+
+  // Rust name (fantastic)
+  rpc name (Empty) returns (NameMessage);
+
+  // Get fan speed
+  rpc get_fan_rpm (Empty) returns (RpmMessage);
+
+  // Get system temperature
+  rpc get_temperature (Empty) returns (TemperatureMessage);
+
+  // Set custom fan control enabled
+  rpc set_enable (EnablementMessage) returns (EnablementMessage);
+
+  // Get custon fan control status
+  rpc get_enable (Empty) returns (EnablementMessage);
+
+  // Set fan control interpolation
+  rpc set_interpolate (EnablementMessage) returns (EnablementMessage);
+
+  // Get fan control interpolation
+  rpc get_interpolate (Empty) returns (EnablementMessage);
+
+  // Get fan control curve
+  rpc get_curve_x (Empty) returns (CurveMessageX);
+
+  // Get fan control curve
+  rpc get_curve_y (Empty) returns (CurveMessageY);
+
+  // Add a new point to the fan curve
+  rpc add_curve_point (GraphPoint) returns (Empty);
+
+  // Remove a point from the fan curve
+  rpc remove_curve_point (IndexMessage) returns (Empty);
+
+  /*
+    .register("echo", api::echo)
+    .register("hello", api::hello)
+    .register("version", api::version)
+    .register("name", api::name)
+    .register("get_fan_rpm", api::get_fan_rpm)
+    .register("get_temperature", api::get_temperature)
+    .register("set_enable", api::set_enable_gen(&runtime))
+    .register("get_enable", api::get_enable_gen(&runtime))
+    .register("set_interpolate", api::set_interpolate_gen(&runtime))
+    .register("get_interpolate", api::get_interpolate_gen(&runtime))
+    .register("get_curve", api::get_curve_gen(&runtime))
+    .register("add_curve_point", api::add_curve_point_gen(&runtime))
+    .register("remove_curve_point", api::remove_curve_point_gen(&runtime))
+  */
+}
+
+// The request and response message for Echo
+message EchoMessage {
+  string msg = 1;
+}
+
+message NameMessage {
+  string name = 1;
+}
+
+message HelloResponse {
+  string phrase = 1;
+}
+
+message Empty {
+  bool ok = 1;
+}
+
+message VersionMessage {
+  int32 major = 1;
+  int32 minor = 2;
+  int32 patch = 3;
+  //string display = 4;
+}
+
+message VersionDisplayMessage {
+  string display = 1;
+}
+
+message VersionStr {
+  string version_str = 1;
+}
+
+message RpmMessage {
+  uint64 rpm = 1;
+}
+
+message TemperatureMessage {
+  double temperature = 1;
+}
+
+message EnablementMessage {
+  bool is_enabled = 1;
+}
+
+message GraphPoint {
+  double x = 1;
+  double y = 2;
+}
+
+/*message CurveMessage {
+  //repeated GraphPoint points = 1;
+  repeated double x = 1;
+  repeated double y = 2;
+}*/
+
+message CurveMessageX {
+  //repeated GraphPoint points = 1;
+  repeated double x = 1;
+}
+
+message CurveMessageY {
+  //repeated GraphPoint points = 1;
+  repeated double y = 2;
+}
+
+message IndexMessage {
+  uint64 index = 1;
+}

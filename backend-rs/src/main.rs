@@ -6,7 +6,13 @@ mod sys;
 
 use simplelog::{WriteLogger, LevelFilter};
 
-use usdpl_back::Instance;
+#[allow(missing_docs)]
+#[allow(dead_code)]
+pub mod services {
+    include!(concat!(env!("OUT_DIR"), "/mod.rs"));
+}
+
+use services::fantastic::FanServer;
 
 const PORT: u16 = 44444;
 
@@ -20,9 +26,14 @@ fn main() -> Result<(), ()> {
 
     log::info!("Starting back-end ({} v{})", api::NAME, api::VERSION);
     println!("Starting back-end ({} v{})", api::NAME, api::VERSION);
-    let runtime = control::ControlRuntime::new();
-    runtime.run();
-    Instance::new(PORT)
+    usdpl_back::Server::new(PORT)
+        .register(FanServer::new(
+            api::FanService::new(control::ControlRuntime::new())
+        ))
+        .run_blocking()
+        .unwrap();
+    Ok(())
+    /*Instance::new(PORT)
         .register("echo", api::echo)
         .register("hello", api::hello)
         .register("version", api::version)
@@ -36,7 +47,7 @@ fn main() -> Result<(), ()> {
         .register("get_curve", api::get_curve_gen(&runtime))
         .register("add_curve_point", api::add_curve_point_gen(&runtime))
         .register("remove_curve_point", api::remove_curve_point_gen(&runtime))
-        .run_blocking()
+        .run_blocking()*/
     //Ok(())
     //println!("Hello, world!");
 }

@@ -1,6 +1,7 @@
 //! Fan control
 
-use std::sync::{RwLock, Arc};
+use std::sync::Arc;
+use tokio::sync::RwLock;
 
 use std::thread;
 use std::time::{Duration, Instant};
@@ -33,6 +34,14 @@ impl ControlRuntime {
         self.state.clone()
     }
 
+    pub(crate) fn settings(&self) -> &'_ RwLock<Settings> {
+        &self.settings
+    }
+
+    pub(crate) fn state(&self) -> &'_ RwLock<State> {
+        &self.state
+    }
+
     pub fn run(&self) -> thread::JoinHandle<()> {
         let runtime_settings = self.settings_clone();
         let runtime_state = self.state_clone();
@@ -44,20 +53,8 @@ impl ControlRuntime {
                     // resumed from sleep; do fan re-init
                     log::debug!("Detected resume from sleep, overriding fan again");
                     {
-                        let state = match runtime_state.read() {
-                            Ok(x) => x,
-                            Err(e) => {
-                                log::error!("runtime failed to acquire state read lock: {}", e);
-                                continue;
-                            }
-                        };
-                        let settings = match runtime_settings.read() {
-                            Ok(x) => x,
-                            Err(e) => {
-                                log::error!("runtime failed to acquire settings read lock: {}", e);
-                                continue;
-                            }
-                        };
+                        let state = runtime_state.blocking_read();
+                        let settings = runtime_settings.blocking_read();
                         if settings.enable {
                             Self::on_set_enable(&settings, &state);
                         }
@@ -65,46 +62,22 @@ impl ControlRuntime {
                 }
                 start_time = Instant::now();
                 { // save to file
-                    let state = match runtime_state.read() {
-                        Ok(x) => x,
-                        Err(e) => {
-                            log::error!("runtime failed to acquire state read lock: {}", e);
-                            continue;
-                        }
-                    };
+                    let state = runtime_state.blocking_read();
                     if state.dirty {
                         // save settings to file
-                        let settings = match runtime_settings.read() {
-                            Ok(x) => x,
-                            Err(e) => {
-                                log::error!("runtime failed to acquire settings read lock: {}", e);
-                                continue;
-                            }
-                        };
+                        let settings = runtime_settings.blocking_read();
                         let settings_json: SettingsJson = settings.clone().into();
                         if let Err(e) = settings_json.save(settings_path(&state.home)) {
                             log::error!("SettingsJson.save({}) error: {}", settings_path(&state.home).display(), e);
                         }
                         Self::on_set_enable(&settings, &state);
                         drop(state);
-                        let mut state = match runtime_state.write() {
-                            Ok(x) => x,
-                            Err(e) => {
-                                log::error!("runtime failed to acquire state write lock: {}", e);
-                                continue;
-                            }
-                        };
+                        let mut state = runtime_state.blocking_write();
                         state.dirty = false;
                     }
                 }
                 { // fan control
-                    let settings = match runtime_settings.read() {
-                        Ok(x) => x,
-                        Err(e) => {
-                            log::error!("runtime failed to acquire settings read lock: {}", e);
-                            continue;
-                        }
-                    };
+                    let settings = runtime_settings.blocking_read();
                     if settings.enable {
                         Self::enforce_jupiter_status(true);
                         Self::do_fan_control(&settings);

@@ -1,259 +1,183 @@
-use usdpl_back::core::serdes::Primitive;
+use crate::services::fantastic::*;
 
 use super::control::ControlRuntime;
-use super::json::GraphPointJson;
 
 pub const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 pub const NAME: &'static str = env!("CARGO_PKG_NAME");
 
-pub fn hello(params: Vec<Primitive>) -> Vec<Primitive> {
-    if let Some(Primitive::String(name)) = params.get(0) {
-        vec![Primitive::String(format!("Hello {}", name))]
-    } else {
-        vec![]
-    }
+pub struct FanService {
+    ctrl: ControlRuntime,
 }
 
-pub fn echo(params: Vec<Primitive>) -> Vec<Primitive> {
-    params
-}
-
-pub fn version(_: Vec<Primitive>) -> Vec<Primitive> {
-    vec![VERSION.into()]
-}
-
-pub fn name(_: Vec<Primitive>) -> Vec<Primitive> {
-    vec![NAME.into()]
-}
-
-pub fn get_fan_rpm(_: Vec<Primitive>) -> Vec<Primitive> {
-    if let Some(rpm) = crate::sys::read_fan() {
-        log::debug!("get_fan_rpm() success: {}", rpm);
-        vec![rpm.into()]
-    } else {
-        log::error!("get_fan_rpm failed to read fan speed");
-        Vec::new()
-    }
-}
-
-pub fn get_temperature(_: Vec<Primitive>) -> Vec<Primitive> {
-    if let Some(temperature) = crate::sys::read_thermal_zone(0) {
-        let real_temp = temperature as f64 / 1000.0;
-        log::debug!("get_temperature() success: {}", real_temp);
-        vec![real_temp.into()]
-    } else {
-        log::error!("get_fan_rpm failed to read fan speed");
-        Vec::new()
-    }
-}
-
-pub fn set_enable_gen(runtime: &ControlRuntime) -> impl Fn(Vec<Primitive>) -> Vec<Primitive> {
-    let runtime_settings = runtime.settings_clone();
-    let runtime_state = runtime.state_clone();
-    move |params| {
-        if let Some(Primitive::Bool(enabled)) = params.get(0) {
-            let mut settings = match runtime_settings.write() {
-                Ok(x) => x,
-                Err(e) => {
-                    log::error!("set_enable failed to acquire settings write lock: {}", e);
-                    return vec![];
-                }
-            };
-            if settings.enable != *enabled {
-                settings.enable = *enabled;
-                let mut state = match runtime_state.write() {
-                    Ok(x) => x,
-                    Err(e) => {
-                        log::error!("set_enable failed to acquire state write lock: {}", e);
-                        return vec![];
-                    }
-                };
-                state.dirty = true;
-                log::debug!("set_enable({}) success", enabled);
-            }
-            vec![(*enabled).into()]
-        } else {
-            Vec::new()
+impl FanService {
+    pub fn new(runtime: ControlRuntime) -> Self {
+        runtime.run();
+        Self {
+            ctrl: runtime,
         }
     }
 }
 
-pub fn get_enable_gen(runtime: &ControlRuntime) -> impl Fn(Vec<Primitive>) -> Vec<Primitive> {
-    let runtime_settings = runtime.settings_clone();
-    move |_| {
-        let lock = match runtime_settings.read() {
-            Ok(x) => x,
-            Err(e) => {
-                log::error!("get_enable failed to acquire settings read lock: {}", e);
-                return vec![];
-            }
-        };
-        log::debug!("get_enable() success");
-        vec![lock.enable.into()]
-    }
-}
-
-pub fn set_interpolate_gen(runtime: &ControlRuntime) -> impl Fn(Vec<Primitive>) -> Vec<Primitive> {
-    let runtime_settings = runtime.settings_clone();
-    let runtime_state = runtime.state_clone();
-    move |params| {
-        if let Some(Primitive::Bool(enabled)) = params.get(0) {
-            let mut settings = match runtime_settings.write() {
-                Ok(x) => x,
-                Err(e) => {
-                    log::error!("set_enable failed to acquire settings write lock: {}", e);
-                    return vec![];
-                }
-            };
-            if settings.interpolate != *enabled {
-                settings.interpolate = *enabled;
-                let mut state = match runtime_state.write() {
-                    Ok(x) => x,
-                    Err(e) => {
-                        log::error!("set_interpolate failed to acquire state write lock: {}", e);
-                        return vec![];
-                    }
-                };
-                state.dirty = true;
-                log::debug!("set_interpolate({}) success", enabled);
-            }
-            vec![(*enabled).into()]
-        } else {
-            Vec::new()
+#[usdpl_back::nrpc::_helpers::async_trait::async_trait]
+impl IFan for FanService {
+    async fn echo(
+            &mut self,
+            input: EchoMessage,
+        ) -> Result<EchoMessage, Box<dyn std::error::Error>> {
+            Ok(input)
         }
-    }
-}
-
-pub fn get_interpolate_gen(runtime: &ControlRuntime) -> impl Fn(Vec<Primitive>) -> Vec<Primitive> {
-    let runtime_settings = runtime.settings_clone();
-    move |_| {
-        let lock = match runtime_settings.read() {
-            Ok(x) => x,
-            Err(e) => {
-                log::error!("get_interpolate failed to acquire settings read lock: {}", e);
-                return vec![];
-            }
-        };
-        log::debug!("get_interpolate() success");
-        vec![lock.interpolate.into()]
-    }
-}
-
-fn curve_to_json(curve: &Vec<super::datastructs::GraphPoint>) -> serde_json::Result<String> {
-    let mut curve_points = Vec::<GraphPointJson>::with_capacity(curve.len());
-    for point in curve.iter() {
-        curve_points.push(point.clone().into());
-    }
-    serde_json::to_string(&curve_points)
-}
-
-pub fn get_curve_gen(runtime: &ControlRuntime) -> impl Fn(Vec<Primitive>) -> Vec<Primitive> {
-    let runtime_settings = runtime.settings_clone();
-    move |_| {
-        let lock = match runtime_settings.read() {
-            Ok(x) => x,
-            Err(e) => {
-                log::error!("get_curve failed to acquire settings read lock: {}", e);
-                return vec![];
-            }
-        };
-        let json_str = match curve_to_json(&lock.curve) {
-            Ok(x) => x,
-            Err(e) => {
-                log::error!("get_curve failed to serialize points: {}", e);
-                return vec![];
-            }
-        };
-        log::debug!("get_curve() success");
-        vec![Primitive::Json(json_str)]
-    }
-}
-
-pub fn add_curve_point_gen(runtime: &ControlRuntime) -> impl Fn(Vec<Primitive>) -> Vec<Primitive> {
-    let runtime_settings = runtime.settings_clone();
-    let runtime_state = runtime.state_clone();
-    move |params| {
-        if let Some(Primitive::Json(json_str)) = params.get(0) {
-            let mut settings = match runtime_settings.write() {
-                Ok(x) => x,
-                Err(e) => {
-                    log::error!("add_curve_point failed to acquire settings write lock: {}", e);
-                    return vec![];
-                }
-            };
-            let new_point: GraphPointJson = match serde_json::from_str(&json_str) {
-                Ok(x) => x,
-                Err(e) => {
-                    log::error!("add_curve_point failed deserialize point json: {}", e);
-                    return vec![];
-                }
-            };
-            let version = settings.version;
-            settings.curve.push(super::datastructs::GraphPoint::from_json(new_point, version));
-            settings.sort_curve();
-            let mut state = match runtime_state.write() {
-                Ok(x) => x,
-                Err(e) => {
-                    log::error!("add_curve_point failed to acquire state write lock: {}", e);
-                    return vec![];
-                }
-            };
-            state.dirty = true;
-            let json_str = match curve_to_json(&settings.curve) {
-                Ok(x) => x,
-                Err(e) => {
-                    log::error!("add_curve_point failed to serialize points: {}", e);
-                    return vec![];
-                }
-            };
-            log::debug!("add_curve_point({}) success", json_str);
-            vec![Primitive::Json(json_str)]
-        } else {
-            Vec::new()
+        async fn hello(
+            &mut self,
+            input: NameMessage,
+        ) -> Result<HelloResponse, Box<dyn std::error::Error>> {
+            Ok(HelloResponse {
+                phrase: format!("Hello {}", input.name)
+            })
         }
-    }
-}
-
-pub fn remove_curve_point_gen(runtime: &ControlRuntime) -> impl Fn(Vec<Primitive>) -> Vec<Primitive> {
-    let runtime_settings = runtime.settings_clone();
-    let runtime_state = runtime.state_clone();
-    move |params| {
-        if let Some(Primitive::F64(index)) = params.get(0) {
-            let mut settings = match runtime_settings.write() {
-                Ok(x) => x,
-                Err(e) => {
-                    log::error!("remove_curve_point failed to acquire settings write lock: {}", e);
-                    return vec![];
+        async fn version(
+            &mut self,
+            _input: Empty,
+        ) -> Result<VersionMessage, Box<dyn std::error::Error>> {
+            Ok(
+                VersionMessage {
+                    major: 0,
+                    minor: 0,
+                    patch: 0,
+                    //display: VERSION.to_string(),
                 }
-            };
-            let rounded = index.round();
-            if rounded >= 0.0 && rounded < settings.curve.len() as _ {
-                let index = rounded as usize;
-                settings.curve.swap_remove(index);
-                settings.sort_curve();
-                let mut state = match runtime_state.write() {
-                    Ok(x) => x,
-                    Err(e) => {
-                        log::error!("remove_curve_point failed to acquire state write lock: {}", e);
-                        return vec![];
-                    }
-                };
-                state.dirty = true;
-                let json_str = match curve_to_json(&settings.curve) {
-                    Ok(x) => x,
-                    Err(e) => {
-                        log::error!("remove_curve_point failed to serialize points: {}", e);
-                        return vec![];
-                    }
-                };
-                log::debug!("remove_curve_point({}) success", json_str);
-                vec![Primitive::Json(json_str)]
+            )
+        }
+        async fn version_str(
+            &mut self,
+            _input: Empty,
+        ) -> Result<VersionDisplayMessage, Box<dyn std::error::Error>> {
+            Ok(
+                VersionDisplayMessage {
+                    display: VERSION.to_owned(),
+                }
+            )
+        }
+        async fn name(
+            &mut self,
+            _input: Empty,
+        ) -> Result<NameMessage, Box<dyn std::error::Error>> {
+            Ok(
+                NameMessage {
+                    name: NAME.to_string(),
+                }
+            )
+        }
+        async fn get_fan_rpm(
+            &mut self,
+            _input: Empty,
+        ) -> Result<RpmMessage, Box<dyn std::error::Error>> {
+            if let Some(rpm) = crate::sys::read_fan() {
+                log::debug!("get_fan_rpm() success: {}", rpm);
+                Ok(RpmMessage { rpm })
             } else {
-                log::error!("remove_curve_point received index out of bounds: {} indexing array of length {}", index, settings.curve.len());
-                return vec![];
+                Err("Failed to read fan speed".into())
             }
-        } else {
-            Vec::new()
         }
-    }
+        async fn get_temperature(
+            &mut self,
+            _input: Empty,
+        ) -> Result<TemperatureMessage, Box<dyn std::error::Error>>{
+            if let Some(temperature) = crate::sys::read_thermal_zone(0) {
+                let real_temp = temperature as f64 / 1000.0;
+                log::debug!("get_temperature() success: {}", real_temp);
+                Ok(TemperatureMessage { temperature: real_temp })
+            } else {
+                Err("get_temperature failed to read thermal zone 0".into())
+            }
+        }
+        async fn set_enable(
+            &mut self,
+            input: EnablementMessage,
+        ) -> Result<EnablementMessage, Box<dyn std::error::Error>>{
+            let mut settings = self.ctrl.settings().write().await;
+            if settings.enable != input.is_enabled {
+                let mut state = self.ctrl.state().write().await;
+                settings.enable = input.is_enabled;
+                state.dirty = true;
+            }
+            log::debug!("set_enable({}) success", input.is_enabled);
+            Ok(input)
+        }
+        async fn get_enable(
+            &mut self,
+            _input: Empty,
+        ) -> Result<EnablementMessage, Box<dyn std::error::Error>>{
+            let is_enabled = self.ctrl.settings().read().await.enable;
+            log::debug!("get_enable() success");
+            Ok(EnablementMessage { is_enabled })
+        }
+        async fn set_interpolate(
+            &mut self,
+            input: EnablementMessage,
+        ) -> Result<EnablementMessage, Box<dyn std::error::Error>>{
+            let mut settings = self.ctrl.settings().write().await;
+            if settings.interpolate != input.is_enabled {
+                let mut state = self.ctrl.state().write().await;
+                settings.interpolate = input.is_enabled;
+                state.dirty = true;
+            }
+            log::debug!("set_interpolate({}) success", input.is_enabled);
+            Ok(input)
+        }
+        async fn get_interpolate(
+            &mut self,
+            _input: Empty,
+        ) -> Result<EnablementMessage, Box<dyn std::error::Error>>{
+            let is_enabled = self.ctrl.settings().read().await.interpolate;
+            log::debug!("get_interpolate() success");
+            Ok(EnablementMessage { is_enabled })
+        }
+        async fn get_curve_x(
+            &mut self,
+            _input: Empty,
+        ) -> Result<CurveMessageX, Box<dyn std::error::Error>>{
+            let settings = self.ctrl.settings().read().await;
+            let x = settings.curve.iter().map(|p| p.x).collect();
+            log::debug!("get_curve_x() success");
+            Ok(CurveMessageX { x })
+        }
+        async fn get_curve_y(
+            &mut self,
+            _input: Empty,
+        ) -> Result<CurveMessageY, Box<dyn std::error::Error>>{
+            let settings = self.ctrl.settings().read().await;
+            let y = settings.curve.iter().map(|p| p.y).collect();
+            log::debug!("get_curve_x() success");
+            Ok(CurveMessageY { y })
+        }
+        async fn add_curve_point(
+            &mut self,
+            point: GraphPoint,
+        ) -> Result<Empty, Box<dyn std::error::Error>>{
+            let mut settings = self.ctrl.settings().write().await;
+            settings.curve.push(super::datastructs::GraphPoint {
+                x: point.x,
+                y: point.y
+            });
+            settings.sort_curve();
+            let mut state = self.ctrl.state().write().await;
+            state.dirty = true;
+            Ok(Empty { ok: true })
+        }
+        async fn remove_curve_point(
+            &mut self,
+            input: IndexMessage,
+        ) -> Result<Empty, Box<dyn std::error::Error>>{
+            let mut settings = self.ctrl.settings().write().await;
+            let i = input.index as usize;
+            if settings.curve.len() < i {
+                settings.curve.swap_remove(i);
+                settings.sort_curve();
+                let mut state = self.ctrl.state().write().await;
+                state.dirty = true;
+                Ok(Empty { ok: true })
+            } else {
+                Ok(Empty { ok: false })
+            }
+        }
 }

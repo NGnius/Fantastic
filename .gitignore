@@ -44,6 +44,7 @@ yalc.lock
 /backend-rs/target
 backend
 /bin/backend
+/src/rust/target
 
 # packaged teasers
 *.zip

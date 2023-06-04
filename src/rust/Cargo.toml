@@ -1,0 +1,19 @@
+[package]
+name = "fantastic-wasm"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+usdpl-front = { version = "0.11", path = "../../../usdpl-rs/usdpl-front"}
+nrpc = "0.6"
+prost = "0.11"
+
+[build-dependencies]
+usdpl-build = { version = "0.11", path = "../../../usdpl-rs/usdpl-build" }
+
+[features]
+debug = ["usdpl-front/debug"]
+decky = ["usdpl-front/decky"]

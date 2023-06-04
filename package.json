@@ -42,7 +42,7 @@
   "dependencies": {
     "decky-frontend-lib": "~3.19.1",
     "react-icons": "^4.7.1",
-    "usdpl-front": "file:src/usdpl"
+    "fantastic-wasm": "file:src/rust/pkg"
   },
   "pnpm": {
     "peerDependencyRules": {
