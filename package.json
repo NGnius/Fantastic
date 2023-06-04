@@ -1,6 +1,6 @@
 {
   "name": "Fantastic",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "A template to quickly create decky plugins from scratch, based on TypeScript and webpack",
   "scripts": {
     "build": "shx rm -rf dist && rollup -c",
@@ -32,17 +32,17 @@
     "@rollup/plugin-replace": "^4.0.0",
     "@rollup/plugin-typescript": "^8.5.0",
     "@types/react": "16.14.0",
-    "@types/webpack": "^5.28.0",
+    "@types/webpack": "^5.28.1",
     "rollup": "^2.79.1",
     "rollup-plugin-import-assets": "^1.1.1",
     "shx": "^0.3.4",
-    "tslib": "^2.5.0",
+    "tslib": "^2.5.3",
     "typescript": "^4.9.5"
   },
   "dependencies": {
-    "decky-frontend-lib": "~3.19.1",
-    "react-icons": "^4.7.1",
-    "fantastic-wasm": "file:src/rust/pkg"
+    "decky-frontend-lib": "~3.21.1",
+    "fantastic-wasm": "file:src/rust/pkg",
+    "react-icons": "^4.9.0"
   },
   "pnpm": {
     "peerDependencyRules": {

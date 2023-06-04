@@ -1,7 +1,7 @@
 import base64
 
 if __name__ == "__main__":
-    print("Embedding WASM into udspl_front.js")
+    print("Embedding WASM into js")
     # assumption: current working directory (relative to this script) is ../
     # assumption: release wasm binary at ./pkg/usdpl_bg.wasm
     with open("./pkg/fantastic_wasm_bg.wasm", mode="rb") as infile:
@@ -40,6 +40,6 @@ export function init_embedded() {
     return init(decode())
 }
 """.encode())
-    with open("./pkg/usdpl_front.d.ts", "a") as outfile:
+    with open("./pkg/fantastic_wasm.d.ts", "a") as outfile:
         outfile.write("\n\n// USDPL customization\nexport function init_embedded();\n")
-    print("Done: Embedded WASM into udspl_front.js")
+    print("Done: Embedded WASM into js")

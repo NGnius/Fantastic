@@ -99,7 +99,7 @@ message VersionStr {
 }
 
 message RpmMessage {
-  uint64 rpm = 1;
+  uint32 rpm = 1;
 }
 
 message TemperatureMessage {
@@ -132,5 +132,5 @@ message CurveMessageY {
 }
 
 message IndexMessage {
-  uint64 index = 1;
+  uint32 index = 1;
 }

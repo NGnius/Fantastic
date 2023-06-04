@@ -73,7 +73,7 @@ impl IFan for FanService {
         ) -> Result<RpmMessage, Box<dyn std::error::Error>> {
             if let Some(rpm) = crate::sys::read_fan() {
                 log::debug!("get_fan_rpm() success: {}", rpm);
-                Ok(RpmMessage { rpm })
+                Ok(RpmMessage { rpm: rpm as u32 })
             } else {
                 Err("Failed to read fan speed".into())
             }
