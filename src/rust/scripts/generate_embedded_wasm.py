@@ -37,7 +37,7 @@ function decode() {
 }
 
 export function init_embedded() {
-    return init(decode())
+    return __wbg_init(decode())
 }
 """.encode())
     with open("./pkg/fantastic_wasm.d.ts", "a") as outfile:

@@ -1,6 +1,10 @@
 //import {init_usdpl, target_usdpl, init_embedded, call_backend} from "usdpl-front";
 
-import { Fan, init_embedded, target_usdpl } from "fantastic-wasm";
+import { init_embedded, target_usdpl } from "fantastic-wasm";
+import { Fan } from "fantastic-wasm";
+
+//@ts-ignore
+//const Fan = {};
 
 const USDPL_PORT: number = 44444;
 

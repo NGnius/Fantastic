@@ -250,7 +250,7 @@ name = "fantastic-rs"
 version = "0.5.0"
 dependencies = [
  "log",
- "nrpc 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nrpc 0.6.0",
  "prost",
  "serde",
  "serde_json",
@@ -572,6 +572,8 @@ checksum = "e5ce46fe64a9d73be07dcbe690a38ce1b293be448fd8ce1e6c1b8062c9f72c6a"
 [[package]]
 name = "nrpc"
 version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6f41caeb65399490c6f68ab2527a833d6f2e9b0d7d5ffc4b062f1484b3fa61cd"
 dependencies = [
  "async-trait",
  "bytes",
@@ -580,9 +582,7 @@ dependencies = [
 
 [[package]]
 name = "nrpc"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6f41caeb65399490c6f68ab2527a833d6f2e9b0d7d5ffc4b062f1484b3fa61cd"
+version = "0.7.0"
 dependencies = [
  "async-trait",
  "bytes",
@@ -593,7 +593,7 @@ dependencies = [
 name = "nrpc-build"
 version = "0.7.0"
 dependencies = [
- "nrpc 0.6.0",
+ "nrpc 0.7.0",
  "prettyplease 0.2.6",
  "proc-macro2",
  "prost-build",
@@ -1279,7 +1279,7 @@ dependencies = [
  "bytes",
  "gettext-ng",
  "log",
- "nrpc 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nrpc 0.6.0",
  "prost",
  "ratchet_rs",
  "tokio",
